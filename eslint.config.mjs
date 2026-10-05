@@ -111,13 +111,14 @@ const eslintConfig = defineConfig([
                         "domain",
                         "presentation",
                         "shared",
+                        "di",
                       ],
                     },
                   },
                 },
               },
               message:
-                "Presentation layer cannot import directly from Infrastructure layer.",
+                "Presentation layer cannot import directly from Infrastructure layer. Use the DI container (composition root) to obtain use cases.",
             },
             {
               from: { element: { type: "shared" } },
