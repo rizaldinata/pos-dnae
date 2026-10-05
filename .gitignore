@@ -42,3 +42,6 @@ next-env.d.ts
 
 #etc
 PRD.md
+/docs
+AGENTS.md
+CLAUDE.md
