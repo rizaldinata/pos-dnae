@@ -10,6 +10,8 @@ export interface ProductActionState {
   success: boolean;
   message: string | null;
   fieldErrors?: Record<string, string[]>;
+  productId?: string;
+  variants?: { id: string; sku: string }[];
 }
 
 const INITIAL: ProductActionState = { success: false, message: null };
@@ -95,6 +97,7 @@ export async function createProductAction(
     success: true,
     message: `Produk "${result.data.name}" berhasil dibuat`,
     productId: result.data.id,
+    variants: result.data.variants.map((v) => ({ id: v.id, sku: v.sku.value })),
   };
 }
 
@@ -149,6 +152,8 @@ export async function updateProductAction(
   return {
     success: true,
     message: `Produk "${result.data.name}" berhasil diperbarui`,
+    productId: result.data.id,
+    variants: result.data.variants.map((v) => ({ id: v.id, sku: v.sku.value })),
   };
 }
 

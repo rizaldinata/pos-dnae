@@ -1,5 +1,7 @@
 import { z } from "zod";
 import type { IProductRepository } from "@/modules/catalog/domain/repositories/product.repository";
+import type { IPriceTierRepository } from "@/modules/catalog/domain/repositories/price-tier.repository";
+import type { ISettingsRepository } from "@/modules/settings/domain/repositories/settings.repository";
 import type { IStockRepository } from "@/modules/inventory/domain/repositories/stock.repository";
 import type { IShiftRepository } from "@/modules/shifts/domain/repositories/shift.repository";
 import type {
@@ -11,6 +13,12 @@ import { CartItem } from "@/modules/sales/domain/entities/cart-item";
 import { Discount } from "@/modules/sales/domain/value-objects/discount";
 import { PricingCalculator } from "@/modules/sales/domain/entities/cart";
 import { StockPolicy } from "@/modules/inventory/domain/services/stock-policy";
+import { priceForQty } from "@/modules/catalog/domain/entities/price-tier";
+import {
+  TaxCalculator,
+  type PricingSettings,
+} from "@/modules/sales/domain/services/tax-calculator";
+import { DEFAULT_PRICING_SETTINGS } from "@/modules/sales/domain/services/tax-calculator";
 import type { CheckoutInput } from "@/modules/sales/application/dto/checkout.dto";
 import { CheckoutSchema } from "@/modules/sales/application/dto/checkout.dto";
 import {
@@ -42,8 +50,29 @@ export class CheckoutUseCase {
     private readonly sales: ISaleRepository,
     private readonly products: IProductRepository,
     private readonly stocks: IStockRepository,
-    private readonly shifts: IShiftRepository
+    private readonly shifts: IShiftRepository,
+    private readonly priceTiers: IPriceTierRepository,
+    private readonly settings: ISettingsRepository
   ) {}
+
+  private async loadPricingSettings(): Promise<PricingSettings> {
+    const result = await this.settings.getAll();
+    if (isErr(result)) {
+      return { ...DEFAULT_PRICING_SETTINGS };
+    }
+    const record = result.data;
+    const mode = record["tax.mode"];
+    const toNumber = (value: unknown, fallback: number): number => {
+      const n = typeof value === "number" ? value : Number(value);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    return {
+      taxRate: toNumber(record["tax.rate"], 0),
+      taxMode:
+        mode === "inclusive" || mode === "exclusive" ? mode : "exclusive",
+      serviceFeeRate: toNumber(record["service_fee.rate"], 0),
+    };
+  }
 
   public async execute(
     actor: { userId: string; idempotencyKey?: string },
@@ -81,6 +110,16 @@ export class CheckoutUseCase {
       return ok(existing.data);
     }
 
+    const pricing = await this.loadPricingSettings();
+
+    // Muat tier grosir sekaligus untuk semua varian.
+    const variantIds = parsed.data.items.map((item) => item.variantId);
+    const tiersResult = await this.priceTiers.listByVariantIds(variantIds);
+    if (isErr(tiersResult)) {
+      return err(tiersResult.error);
+    }
+    const tiersByVariant = tiersResult.data;
+
     // Muat varian + verifikasi harga dari database (jangan percaya klien).
     const cartItems: CartItem[] = [];
     for (const item of parsed.data.items) {
@@ -92,6 +131,11 @@ export class CheckoutUseCase {
         return err(new NotFoundError("Varian produk", item.variantId));
       }
       const { variant } = variantResult.data;
+      const effectivePrice = priceForQty(
+        tiersByVariant[item.variantId] ?? [],
+        Math.floor(item.qty),
+        variant.sellPrice
+      );
 
       const stockResult = await this.stocks.getByVariantId(item.variantId);
       if (isErr(stockResult)) {
@@ -123,7 +167,7 @@ export class CheckoutUseCase {
             variantName: variant.variantName,
             sku: variant.sku.value,
             qty: Math.floor(item.qty),
-            unitPrice: variant.sellPrice,
+            unitPrice: effectivePrice,
             costPrice: variant.costPrice,
             stockQty,
             trackStock: variant.trackStock,
@@ -136,12 +180,35 @@ export class CheckoutUseCase {
       }
     }
 
-    const totals = PricingCalculator.calculate(cartItems, null);
+    let transactionDiscount: Discount | null = null;
+    if (
+      parsed.data.transactionDiscount &&
+      parsed.data.transactionDiscount.value > 0
+    ) {
+      try {
+        const td = parsed.data.transactionDiscount;
+        transactionDiscount =
+          td.kind === "percent"
+            ? Discount.percent(td.value)
+            : Discount.amount(td.value);
+      } catch {
+        return err(new ValidationError("Diskon transaksi tidak valid"));
+      }
+    }
+
+    const totals = PricingCalculator.calculate(cartItems, transactionDiscount);
+    const tax = TaxCalculator.calculate(
+      totals.subtotal -
+        totals.itemDiscountTotal -
+        totals.transactionDiscountTotal,
+      pricing
+    );
+
     const paidTotal = parsed.data.payments.reduce(
       (sum, p) => sum + Math.round(p.amount),
       0
     );
-    if (paidTotal < totals.grandTotal) {
+    if (paidTotal < tax.grandTotal) {
       return err(new UnderpaidError());
     }
 
@@ -156,6 +223,9 @@ export class CheckoutUseCase {
         qty: item.qty,
         discount: item.discountAmount(),
       })),
+      transactionDiscount: totals.transactionDiscountTotal,
+      taxTotal: tax.taxTotal,
+      serviceFee: tax.serviceTotal,
       payments: parsed.data.payments.map((p) => ({
         paymentMethodId: p.paymentMethodId,
         amount: Math.round(p.amount),

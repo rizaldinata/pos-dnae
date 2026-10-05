@@ -19,6 +19,9 @@ export default async function DashboardLayout({
 
   const user = result.data;
 
+  const lowStockResult = await container.inventory.getLowStockCount.execute();
+  const lowStockCount = isErr(lowStockResult) ? 0 : lowStockResult.data;
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <div className="flex flex-1 flex-col lg:flex-row">
@@ -27,6 +30,7 @@ export default async function DashboardLayout({
             fullName: user.fullName,
             roleName: user.roleName,
             permissions: user.permissions,
+            lowStockCount,
           }}
         />
         <main className="min-w-0 flex-1 p-4 lg:p-6">{children}</main>

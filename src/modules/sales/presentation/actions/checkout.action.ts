@@ -47,6 +47,8 @@ export interface CheckoutFormInput {
     qty: number;
     discount?: { kind: "percent" | "amount"; value: number };
   }[];
+  customerId?: string | null;
+  transactionDiscount?: { kind: "percent" | "amount"; value: number };
   payments: {
     paymentMethodId: string;
     amount: number;
@@ -68,7 +70,9 @@ export async function checkoutAction(
     { userId: guard.user.id, idempotencyKey: input.idempotencyKey },
     {
       items: input.items,
+      transactionDiscount: input.transactionDiscount,
       payments: input.payments,
+      customerId: input.customerId ?? null,
     }
   );
 

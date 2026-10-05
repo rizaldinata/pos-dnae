@@ -9,6 +9,10 @@ import type {
   StockOverviewFilter,
   StockOverviewResult,
 } from "@/modules/inventory/domain/repositories/stock.repository";
+import type {
+  AdjustStockRecord,
+  AdjustStockResult,
+} from "@/modules/inventory/domain/repositories/stock-opname.repository";
 import type { StockOverview } from "@/modules/inventory/domain/services/stock-policy";
 import type { Stock } from "@/modules/inventory/domain/entities/stock";
 import type { StockMovement } from "@/modules/inventory/domain/entities/stock";
@@ -22,6 +26,7 @@ import {
 import { err, ok, type Result } from "@/shared/kernel/result";
 import {
   InvariantViolationError,
+  ValidationError,
   type DomainError,
 } from "@/shared/kernel/errors";
 
@@ -74,6 +79,52 @@ export class SupabaseStockRepository implements IStockRepository {
       return ok(null);
     }
     return ok(mapStockOverviewRow(data as unknown as StockOverviewRow));
+  }
+
+  public async adjustStock(
+    record: AdjustStockRecord
+  ): Promise<Result<AdjustStockResult, DomainError>> {
+    const { data, error } = await this.client.rpc("adjust_stock", {
+      p_variant_id: record.variantId,
+      p_new_qty: record.newQty,
+      p_reason: record.reason,
+    });
+    if (error) {
+      if (error.message.includes("ADJUST_REASON_REQUIRED")) {
+        return err(new ValidationError("Alasan penyesuaian wajib diisi"));
+      }
+      if (error.message.includes("FORBIDDEN")) {
+        return err(
+          new ValidationError("Anda tidak memiliki hak menyesuaikan stok")
+        );
+      }
+      return err(
+        new InvariantViolationError(`Database error: ${error.message}`)
+      );
+    }
+    const json = data as unknown as {
+      variant_id: string;
+      old_qty: number | string;
+      new_qty: number | string;
+    };
+    return ok({
+      variantId: json.variant_id,
+      oldQty: Number(json.old_qty),
+      newQty: Number(json.new_qty),
+    });
+  }
+
+  public async countLowStock(): Promise<Result<number, DomainError>> {
+    const { count, error } = await this.client
+      .from("stock_overview")
+      .select("variant_id", { count: "exact", head: true })
+      .or("status.eq.menipis,status.eq.habis");
+    if (error) {
+      return err(
+        new InvariantViolationError(`Database error: ${error.message}`)
+      );
+    }
+    return ok(count ?? 0);
   }
 
   public async listOverview(

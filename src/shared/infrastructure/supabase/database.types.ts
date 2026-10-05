@@ -1203,9 +1203,23 @@ export type Database = {
       };
     };
     Functions: {
+      adjust_stock: {
+        Args: { p_new_qty: number; p_reason: string; p_variant_id: string };
+        Returns: Json;
+      };
+      approve_stock_opname: { Args: { p_opname_id: string }; Returns: Json };
       build_sale_receipt: { Args: { p_sale_id: string }; Returns: Json };
       close_shift: {
         Args: { p_closing_cash: number; p_note?: string; p_shift_id: string };
+        Returns: Json;
+      };
+      create_return: {
+        Args: {
+          p_items: Json;
+          p_reason: string;
+          p_refund_method_id: string;
+          p_sale_id: string;
+        };
         Returns: Json;
       };
       create_sale: { Args: { p_payload: Json }; Returns: Json };
@@ -1220,6 +1234,7 @@ export type Database = {
         }[];
       };
       has_permission: { Args: { p_code: string }; Returns: boolean };
+      hold_sale: { Args: { p_payload: Json }; Returns: Json };
       monthly_sales_summary: {
         Args: { p_month: number; p_year: number };
         Returns: Database["public"]["CompositeTypes"]["sales_day_summary"][];
@@ -1232,6 +1247,10 @@ export type Database = {
       };
       next_number: { Args: { p_name: string }; Returns: number };
       open_shift: { Args: { p_opening_cash: number }; Returns: Json };
+      resume_sale: {
+        Args: { p_discard?: boolean; p_sale_id: string };
+        Returns: Json;
+      };
       sales_by_date_range: {
         Args: { p_from: string; p_to: string };
         Returns: Database["public"]["CompositeTypes"]["sales_day_summary"][];
@@ -1243,6 +1262,10 @@ export type Database = {
         };
       };
       shift_summary: { Args: { p_shift_id: string }; Returns: Json };
+      void_sale: {
+        Args: { p_reason: string; p_sale_id: string };
+        Returns: Json;
+      };
     };
     Enums: {
       [_ in never]: never;

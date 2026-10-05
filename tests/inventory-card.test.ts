@@ -56,6 +56,10 @@ describe("GetStockCardUseCase", () => {
           qty: 100,
           status: "normal",
         }),
+      adjustStock: async () => {
+        throw new InvariantViolationError("not used");
+      },
+      countLowStock: async () => ok(0),
     };
     const movementRepo: IStockMovementRepository = {
       create: async () => err(new InvariantViolationError("not used")),

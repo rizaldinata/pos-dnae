@@ -83,6 +83,7 @@ export interface SaleItemProps {
   costPrice: Money;
   discount: Money;
   subtotal: Money;
+  returnedQty?: number;
 }
 
 export class SaleItem extends BaseEntity<SaleItemProps> {
@@ -124,6 +125,14 @@ export class SaleItem extends BaseEntity<SaleItemProps> {
 
   public get discount(): Money {
     return this._props.discount;
+  }
+
+  public get returnedQty(): number {
+    return this._props.returnedQty ?? 0;
+  }
+
+  public get returnableQty(): number {
+    return Math.max(this._props.qty - this.returnedQty, 0);
   }
 }
 

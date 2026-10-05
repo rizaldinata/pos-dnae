@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import {
   checkoutAction,
   listActivePaymentMethodsAction,
@@ -9,12 +9,8 @@ import {
 } from "@/modules/sales/presentation/actions/checkout.action";
 import { getStoreSettingsAction } from "@/modules/settings/presentation/actions/settings.action";
 import type { StoreSettings } from "@/modules/settings/domain/entities/store-setting";
-import {
-  useCartStore,
-  toCartItemEntities,
-} from "@/modules/sales/presentation/hooks/use-cart-store";
-import { PricingCalculator } from "@/modules/sales/domain/entities/cart";
-import { Discount } from "@/modules/sales/domain/value-objects/discount";
+import { useCartStore } from "@/modules/sales/presentation/hooks/use-cart-store";
+import { useCartTotals } from "@/modules/sales/presentation/hooks/use-cart-totals";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import {
@@ -29,6 +25,20 @@ import { ReceiptPdfDownload } from "@/modules/sales/presentation/components/rece
 
 const QUICK_CASH = [10000, 20000, 50000, 100000];
 
+interface PaymentRow {
+  key: string;
+  methodId: string;
+  amount: string;
+  reference: string;
+}
+
+function newRowKey(): string {
+  return `pay-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+const selectClass =
+  "flex min-h-11 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm";
+
 export function PaymentDialog({
   open,
   onClose,
@@ -36,44 +46,23 @@ export function PaymentDialog({
   open: boolean;
   onClose: () => void;
 }) {
+  const selectedCustomer = useCartStore((s) => s.selectedCustomer);
   const items = useCartStore((s) => s.items);
   const transactionDiscount = useCartStore((s) => s.transactionDiscount);
   const clearCart = useCartStore((s) => s.clearCart);
+  const { entities, pricingTotals, tax } = useCartTotals();
 
-  const entities = useMemo(() => toCartItemEntities(items), [items]);
-  const trxDiscount = useMemo(() => {
-    if (!transactionDiscount) {
-      return null;
-    }
-    try {
-      return transactionDiscount.kind === "percent"
-        ? Discount.percent(Math.min(transactionDiscount.value, 100))
-        : Discount.amount(transactionDiscount.value);
-    } catch {
-      return null;
-    }
-  }, [transactionDiscount]);
-  const totals = useMemo(
-    () => PricingCalculator.calculate(entities, trxDiscount),
-    [entities, trxDiscount]
-  );
+  const grandTotal = tax.grandTotal;
 
   const [methods, setMethods] = useState<PaymentMethodDTO[]>([]);
   const [storeSettings, setStoreSettings] = useState<StoreSettings | null>(
     null
   );
-  const [methodId, setMethodId] = useState<string>("");
-  const [received, setReceived] = useState<string>(() =>
-    String(totals.grandTotal)
-  );
-  const [reference, setReference] = useState("");
+  const [rows, setRows] = useState<PaymentRow[]>([]);
   const [receipt, setReceipt] = useState<ReceiptDTO | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const idempotencyKey = useRef<string>(crypto.randomUUID());
-
-  const selectedMethod = methods.find((m) => m.id === methodId) ?? null;
-  const isCash = !selectedMethod || selectedMethod.isCash;
 
   useEffect(() => {
     if (!open) {
@@ -86,7 +75,15 @@ export function PaymentDialog({
       }
       setMethods(list);
       const cash = list.find((m) => m.isCash);
-      setMethodId((prev) => prev || cash?.id || list[0]?.id || "");
+      const firstId = cash?.id ?? list[0]?.id ?? "";
+      setRows([
+        {
+          key: newRowKey(),
+          methodId: firstId,
+          amount: String(grandTotal),
+          reference: "",
+        },
+      ]);
     });
     getStoreSettingsAction()
       .then((settings) => {
@@ -98,24 +95,65 @@ export function PaymentDialog({
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  const receivedAmount = Math.round(Number(received) || 0);
-  const payAmount = isCash ? receivedAmount : totals.grandTotal;
-  const change = payAmount - totals.grandTotal;
+  function methodOf(row: PaymentRow): PaymentMethodDTO | null {
+    return methods.find((m) => m.id === row.methodId) ?? null;
+  }
+
+  function updateRow(key: string, patch: Partial<PaymentRow>) {
+    setRows((prev) =>
+      prev.map((r) => (r.key === key ? { ...r, ...patch } : r))
+    );
+  }
+
+  const paidTotal = rows.reduce(
+    (sum, r) => sum + Math.max(Math.round(Number(r.amount) || 0), 0),
+    0
+  );
+  const remaining = grandTotal - paidTotal;
+  const change = Math.max(paidTotal - grandTotal, 0);
+  const hasCashRow = rows.some((r) => methodOf(r)?.isCash ?? true);
   const canConfirm =
     !pending &&
     items.length > 0 &&
-    payAmount >= totals.grandTotal &&
-    totals.grandTotal >= 0;
+    rows.length > 0 &&
+    rows.every((r) => r.methodId) &&
+    paidTotal >= grandTotal &&
+    grandTotal >= 0;
+
+  function setFirstRowAmount(amount: number) {
+    setRows((prev) => {
+      if (prev.length === 0) {
+        return prev;
+      }
+      const [first, ...rest] = prev as [PaymentRow, ...PaymentRow[]];
+      return [{ ...first, amount: String(amount) }, ...rest];
+    });
+  }
+
+  function addRow() {
+    const cash = methods.find((m) => m.isCash);
+    setRows((prev) => [
+      ...prev,
+      {
+        key: newRowKey(),
+        methodId: cash?.id ?? methods[0]?.id ?? "",
+        amount: String(Math.max(remaining, 0)),
+        reference: "",
+      },
+    ]);
+  }
 
   function handleConfirm() {
-    if (!canConfirm || !methodId) {
+    if (!canConfirm) {
       return;
     }
     startTransition(async () => {
       const result = await checkoutAction({
         idempotencyKey: idempotencyKey.current,
+        customerId: selectedCustomer?.id ?? null,
         items: entities.map((item) => ({
           variantId: item.variantId,
           qty: item.qty,
@@ -123,13 +161,13 @@ export function PaymentDialog({
             ? { kind: item.discount.kind, value: item.discount.value }
             : undefined,
         })),
-        payments: [
-          {
-            paymentMethodId: methodId,
-            amount: payAmount,
-            referenceNo: isCash ? null : reference || null,
-          },
-        ],
+        transactionDiscount: transactionDiscount ?? undefined,
+        payments: rows.map((r) => ({
+          paymentMethodId: r.methodId,
+          amount: Math.round(Number(r.amount) || 0),
+          referenceNo:
+            (methodOf(r)?.isCash ?? true) ? null : r.reference || null,
+        })),
       });
       if (!result.success || !result.receipt) {
         setMessage(result.message ?? "Pembayaran gagal");
@@ -166,60 +204,115 @@ export function PaymentDialog({
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Total tagihan</span>
                 <span className="text-lg font-bold">
-                  {formatRupiah(totals.grandTotal)}
+                  {formatRupiah(grandTotal)}
                 </span>
               </div>
               <p className="text-xs text-muted-foreground">
-                {totals.totalQty} item • {items.length} baris
+                {pricingTotals.totalQty} item • {items.length} baris
+                {tax.taxTotal > 0
+                  ? ` • termasuk pajak ${formatRupiah(tax.taxTotal)}`
+                  : ""}
+                {tax.serviceTotal > 0
+                  ? ` • layanan ${formatRupiah(tax.serviceTotal)}`
+                  : ""}
               </p>
             </div>
 
             <div className="flex flex-col gap-2">
-              <label htmlFor="pay-method" className="text-sm font-medium">
-                Metode pembayaran
-              </label>
-              <select
-                id="pay-method"
-                value={methodId}
-                onChange={(e) => {
-                  setMethodId(e.target.value);
-                  const method = methods.find((m) => m.id === e.target.value);
-                  if (!method || method.isCash) {
-                    setReceived(String(totals.grandTotal));
-                  }
-                }}
+              {rows.map((row, index) => {
+                const method = methodOf(row);
+                const isCash = method?.isCash ?? true;
+                return (
+                  <div key={row.key} className="rounded-md border p-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-muted-foreground">
+                        #{index + 1}
+                      </span>
+                      <select
+                        aria-label={`Metode bayar ${index + 1}`}
+                        value={row.methodId}
+                        onChange={(e) =>
+                          updateRow(row.key, { methodId: e.target.value })
+                        }
+                        disabled={pending}
+                        className={`${selectClass} flex-1`}
+                      >
+                        {methods.map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {m.name}
+                          </option>
+                        ))}
+                      </select>
+                      {rows.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          disabled={pending}
+                          onClick={() =>
+                            setRows((prev) =>
+                              prev.filter((r) => r.key !== row.key)
+                            )
+                          }
+                        >
+                          Hapus
+                        </Button>
+                      )}
+                    </div>
+                    <div className="mt-2 flex gap-2">
+                      <Input
+                        aria-label={`Nominal bayar ${index + 1}`}
+                        type="number"
+                        min={0}
+                        value={row.amount}
+                        onChange={(e) =>
+                          updateRow(row.key, { amount: e.target.value })
+                        }
+                        disabled={pending}
+                        className="min-h-11 flex-1 text-lg"
+                      />
+                      {!isCash && (
+                        <Input
+                          aria-label={`Referensi ${index + 1}`}
+                          value={row.reference}
+                          onChange={(e) =>
+                            updateRow(row.key, { reference: e.target.value })
+                          }
+                          disabled={pending}
+                          placeholder="Referensi"
+                          className="min-h-11 flex-1"
+                        />
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
                 disabled={pending}
-                className="flex min-h-11 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
+                onClick={addRow}
               >
-                {methods.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {isCash ? (
-              <div className="flex flex-col gap-2">
-                <label htmlFor="pay-received" className="text-sm font-medium">
-                  Uang diterima
-                </label>
-                <Input
-                  id="pay-received"
-                  type="number"
-                  min={0}
-                  value={received}
-                  onChange={(e) => setReceived(e.target.value)}
-                  disabled={pending}
-                  className="min-h-11 text-lg"
-                />
+                + Split payment
+              </Button>
+              {hasCashRow && (
                 <div className="flex flex-wrap gap-2">
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     disabled={pending}
-                    onClick={() => setReceived(String(totals.grandTotal))}
+                    onClick={() =>
+                      setFirstRowAmount(
+                        grandTotal -
+                          (paidTotal -
+                            Math.max(
+                              Math.round(Number(rows[0]?.amount) || 0),
+                              0
+                            ))
+                      )
+                    }
                   >
                     Uang pas
                   </Button>
@@ -230,47 +323,26 @@ export function PaymentDialog({
                       variant="outline"
                       size="sm"
                       disabled={pending}
-                      onClick={() => setReceived(String(nominal))}
+                      onClick={() => setFirstRowAmount(nominal)}
                     >
                       {formatRupiah(nominal)}
                     </Button>
                   ))}
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Kembalian</span>
-                  <span
-                    className={`font-semibold ${change < 0 ? "text-destructive" : ""}`}
-                  >
-                    {change < 0
-                      ? "Kurang " + formatRupiah(-change)
-                      : formatRupiah(change)}
-                  </span>
-                </div>
+              )}
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {remaining > 0 ? "Sisa" : "Kembalian"}
+                </span>
+                <span
+                  className={`font-semibold ${remaining > 0 ? "text-destructive" : ""}`}
+                >
+                  {remaining > 0
+                    ? "Kurang " + formatRupiah(remaining)
+                    : formatRupiah(change)}
+                </span>
               </div>
-            ) : (
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Nominal</span>
-                  <span className="font-semibold">
-                    {formatRupiah(totals.grandTotal)}
-                  </span>
-                </div>
-                <label htmlFor="pay-reference" className="text-sm font-medium">
-                  Nomor referensi{" "}
-                  <span className="font-normal text-muted-foreground">
-                    (opsional)
-                  </span>
-                </label>
-                <Input
-                  id="pay-reference"
-                  value={reference}
-                  onChange={(e) => setReference(e.target.value)}
-                  disabled={pending}
-                  placeholder="No. referensi EDC / QRIS / transfer"
-                  className="min-h-11"
-                />
-              </div>
-            )}
+            </div>
 
             {message && (
               <p role="alert" className="text-sm text-destructive">
@@ -285,7 +357,7 @@ export function PaymentDialog({
             >
               {pending
                 ? "Memproses..."
-                : `Konfirmasi ${formatRupiah(payAmount)}`}
+                : `Konfirmasi ${formatRupiah(paidTotal)}`}
             </Button>
           </div>
         ) : (

@@ -1,7 +1,13 @@
 import type { IProductRepository } from "@/modules/catalog/domain/repositories/product.repository";
+import type { IPriceTierRepository } from "@/modules/catalog/domain/repositories/price-tier.repository";
 import type { Product } from "@/modules/catalog/domain/entities/product";
 import { err, isErr, ok, type Result } from "@/shared/kernel/result";
 import type { DomainError } from "@/shared/kernel/errors";
+
+export interface POSTier {
+  minQty: number;
+  price: number;
+}
 
 export interface POSVariant {
   variantId: string;
@@ -16,6 +22,7 @@ export interface POSVariant {
   stockQty: number | null;
   trackStock: boolean;
   minStock: number;
+  tiers: POSTier[];
 }
 
 export interface POSProduct {
@@ -25,7 +32,10 @@ export interface POSProduct {
   variants: POSVariant[];
 }
 
-function toPOSProduct(product: Product): POSProduct {
+function toPOSProduct(
+  product: Product,
+  tiersByVariant: Record<string, POSTier[]>
+): POSProduct {
   return {
     productId: product.id,
     name: product.name,
@@ -45,12 +55,16 @@ function toPOSProduct(product: Product): POSProduct {
       stockQty: v.stockQty ?? null,
       trackStock: v.trackStock,
       minStock: v.minStock,
+      tiers: tiersByVariant[v.id] ?? [],
     })),
   };
 }
 
 export class SearchProductsForPOSUseCase {
-  constructor(private readonly products: IProductRepository) {}
+  constructor(
+    private readonly products: IProductRepository,
+    private readonly priceTiers: IPriceTierRepository
+  ) {}
 
   public async execute(
     query: string,
@@ -66,6 +80,26 @@ export class SearchProductsForPOSUseCase {
     if (isErr(result)) {
       return err(result.error);
     }
-    return ok(result.data.items.map(toPOSProduct));
+    const variantIds = result.data.items.flatMap((p) =>
+      p.variants.map((v) => v.id)
+    );
+    const tiersResult = await this.priceTiers.listByVariantIds(variantIds);
+    if (isErr(tiersResult)) {
+      return err(tiersResult.error);
+    }
+    const tiersByVariant = tiersResult.data;
+    return ok(
+      result.data.items.map((product) =>
+        toPOSProduct(
+          product,
+          Object.fromEntries(
+            Object.entries(tiersByVariant).map(([variantId, tiers]) => [
+              variantId,
+              tiers.map((t) => ({ minQty: t.minQty, price: t.price.amount })),
+            ])
+          )
+        )
+      )
+    );
   }
 }

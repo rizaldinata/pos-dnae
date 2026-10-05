@@ -136,3 +136,37 @@ export class RecordStockMovementUseCase {
     });
   }
 }
+
+export class GetLowStockCountUseCase {
+  constructor(private readonly stocks: IStockRepository) {}
+
+  public async execute(): Promise<Result<number, DomainError>> {
+    return this.stocks.countLowStock();
+  }
+}
+
+export class GetLowStockItemsUseCase {
+  constructor(private readonly stocks: IStockRepository) {}
+
+  public async execute(
+    limit = 5
+  ): Promise<Result<StockOverviewResult, DomainError>> {
+    const [menipis, habis] = await Promise.all([
+      this.stocks.listOverview({ status: "menipis", page: 1, pageSize: limit }),
+      this.stocks.listOverview({ status: "habis", page: 1, pageSize: limit }),
+    ]);
+    if (isErr(habis)) {
+      return err(habis.error);
+    }
+    if (isErr(menipis)) {
+      return err(menipis.error);
+    }
+    const items = [...habis.data.items, ...menipis.data.items].slice(0, limit);
+    return ok({
+      items,
+      total: habis.data.total + menipis.data.total,
+      page: 1,
+      pageSize: limit,
+    });
+  }
+}

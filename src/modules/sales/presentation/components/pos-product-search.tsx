@@ -212,6 +212,10 @@ export function POSProductSearch({
           <div className="flex flex-col gap-2">
             {variantPicker?.variants.map((v) => {
               const empty = v.trackStock && (v.stockQty ?? 0) <= 0;
+              const tierHint =
+                v.tiers.length > 0 && v.tiers[0]
+                  ? ` • Grosir ≥${v.tiers[0].minQty}: ${formatRupiah(v.tiers[0].price)}`
+                  : "";
               return (
                 <Button
                   key={v.variantId}
@@ -227,6 +231,7 @@ export function POSProductSearch({
                   <span className="text-muted-foreground">
                     {formatRupiah(v.sellPrice)} •{" "}
                     {empty ? "Habis" : `Stok ${v.stockQty}`}
+                    {tierHint}
                   </span>
                 </Button>
               );

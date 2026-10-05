@@ -7,6 +7,8 @@ import type {
 import type { IProductRepository } from "@/modules/catalog/domain/repositories/product.repository";
 import type { IStockRepository } from "@/modules/inventory/domain/repositories/stock.repository";
 import type { IShiftRepository } from "@/modules/shifts/domain/repositories/shift.repository";
+import type { IPriceTierRepository } from "@/modules/catalog/domain/repositories/price-tier.repository";
+import type { ISettingsRepository } from "@/modules/settings/domain/repositories/settings.repository";
 import { Shift } from "@/modules/shifts/domain/entities/shift";
 import { Money as ShiftMoney } from "@/shared/lib/money";
 import { ProductVariant } from "@/modules/catalog/domain/entities/product";
@@ -78,6 +80,7 @@ describe("CheckoutUseCase", () => {
     variantExists?: boolean;
     existingReceipt?: boolean;
     openShift?: boolean;
+    taxRate?: number;
   }) {
     const stockQty = options?.stockQty ?? 100;
     const variantExists = options?.variantExists ?? true;
@@ -109,6 +112,10 @@ describe("CheckoutUseCase", () => {
       listOverview: async () =>
         ok({ items: [], total: 0, page: 1, pageSize: 20 }),
       getOverviewByVariantId: async () => ok(null),
+      adjustStock: async () => {
+        throw new InvariantViolationError("not used");
+      },
+      countLowStock: async () => ok(0),
     };
     const sales: ISaleRepository = {
       createSale: async (record: CreateSaleRecord) => {
@@ -120,6 +127,21 @@ describe("CheckoutUseCase", () => {
       findReceiptByInvoice: async () => ok(null),
       findReceiptByIdempotencyKey: async (key) =>
         ok(options?.existingReceipt ? makeReceipt("sale-lama", key) : null),
+      voidSale: async () => {
+        throw new InvariantViolationError("not used");
+      },
+      createReturn: async () => {
+        throw new InvariantViolationError("not used");
+      },
+      listReturns: async () =>
+        ok({ items: [], total: 0, page: 1, pageSize: 20 }),
+      holdSale: async () => {
+        throw new InvariantViolationError("not used");
+      },
+      resumeSale: async () => {
+        throw new InvariantViolationError("not used");
+      },
+      listHeldSales: async () => ok([]),
     };
     const shifts: IShiftRepository = {
       openShift: async () => {
@@ -156,8 +178,32 @@ describe("CheckoutUseCase", () => {
       listShifts: async () =>
         ok({ items: [], total: 0, page: 1, pageSize: 20 }),
     };
+    const priceTiers: IPriceTierRepository = {
+      listByVariant: async () => ok([]),
+      listByVariantIds: async () => ok({}),
+      setTiers: async () => ok([]),
+    };
+    const taxRate = options?.taxRate ?? 0;
+    const settings: ISettingsRepository = {
+      getAll: async () =>
+        ok({
+          "tax.rate": taxRate,
+          "tax.mode": "exclusive",
+          "service_fee.rate": 0,
+        }),
+      get: async () => ok(null),
+      set: async () => ok(undefined),
+      setMany: async () => ok(undefined),
+    };
     return {
-      useCase: new CheckoutUseCase(sales, products, stocks, shifts),
+      useCase: new CheckoutUseCase(
+        sales,
+        products,
+        stocks,
+        shifts,
+        priceTiers,
+        settings
+      ),
       createdCount: () => created,
       lastRecord: () => lastRecord,
     };
@@ -271,6 +317,20 @@ describe("CheckoutUseCase", () => {
     if (result.success) {
       expect(result.data.sale.id).toBe("sale-lama");
     }
+  });
+
+  it("pajak eksklusif 10% dihitung server dan diteruskan", async () => {
+    const { useCase, lastRecord } = setup({ taxRate: 10 });
+    const result = await useCase.execute(
+      { userId: "u-1" },
+      {
+        items: [{ variantId: VARIANT_ID, qty: 2 }],
+        payments: [{ paymentMethodId: tunai, amount: 7700 }],
+      }
+    );
+    // 7000 + pajak 10% = 7700
+    expect(result.success).toBe(true);
+    expect(lastRecord()?.taxTotal).toBe(700);
   });
 
   it("diskon item diteruskan sebagai nominal ke repository", async () => {

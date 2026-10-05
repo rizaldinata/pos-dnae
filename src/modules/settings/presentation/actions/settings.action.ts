@@ -127,3 +127,36 @@ export async function uploadStoreLogoAction(
     message: "Logo berhasil diunggah",
   };
 }
+
+export interface PricingSettingsState {
+  success: boolean;
+  message: string | null;
+}
+
+export async function updatePricingSettingsAction(
+  _prevState: PricingSettingsState,
+  formData: FormData
+): Promise<PricingSettingsState> {
+  const guard = await requirePermission("settings.manage");
+  if (!guard.ok || guard.user.roleName !== "Owner") {
+    return {
+      success: false,
+      message: "Hanya Owner yang dapat mengubah pengaturan pajak",
+    };
+  }
+  const container = await getAppContainer();
+  const result = await container.settings.updatePricingSettings.execute({
+    taxRate: Number(formData.get("taxRate") ?? 0),
+    taxMode:
+      String(formData.get("taxMode") ?? "exclusive") === "inclusive"
+        ? "inclusive"
+        : "exclusive",
+    serviceFeeRate: Number(formData.get("serviceFee") ?? 0),
+  });
+  if (isErr(result)) {
+    return { success: false, message: result.error.message };
+  }
+  revalidatePath("/pengaturan/toko");
+  revalidatePath("/kasir");
+  return { success: true, message: "Pengaturan pajak & layanan tersimpan" };
+}

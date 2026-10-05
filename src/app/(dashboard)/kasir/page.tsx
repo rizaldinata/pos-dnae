@@ -17,13 +17,23 @@ export default async function KasirPage() {
     redirect("/login");
   }
 
-  const initialShift = await getCurrentShiftAction();
+  const [initialShift, pricing] = await Promise.all([
+    getCurrentShiftAction(),
+    (async () => {
+      const pricingResult =
+        await container.settings.getPricingSettings.execute();
+      return isErr(pricingResult)
+        ? { taxRate: 0, taxMode: "exclusive" as const, serviceFeeRate: 0 }
+        : pricingResult.data;
+    })(),
+  ]);
 
   return (
     <KasirScreen
       userName={result.data.fullName}
       roleName={result.data.roleName}
       initialShift={initialShift}
+      initialPricing={pricing}
     />
   );
 }

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { SearchProductsForPOSUseCase } from "@/modules/sales/application/use-cases/search-products-pos.use-case";
 import type { IProductRepository } from "@/modules/catalog/domain/repositories/product.repository";
+import type { IPriceTierRepository } from "@/modules/catalog/domain/repositories/price-tier.repository";
 import {
   Product,
   ProductVariant,
@@ -67,8 +68,13 @@ describe("SearchProductsForPOSUseCase", () => {
       },
       softDelete: async () => ok(undefined),
     };
+    const tiers: IPriceTierRepository = {
+      listByVariant: async () => ok([]),
+      listByVariantIds: async () => ok({}),
+      setTiers: async () => ok([]),
+    };
     return {
-      useCase: new SearchProductsForPOSUseCase(repo),
+      useCase: new SearchProductsForPOSUseCase(repo, tiers),
       received: () => received,
     };
   }

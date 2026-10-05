@@ -42,6 +42,21 @@ export default async function EditProductPage({
 
   const product = productResult.data;
 
+  const tiersByVariant: Record<string, { minQty: number; price: number }[]> =
+    {};
+  await Promise.all(
+    product.variants.map(async (v) => {
+      const tiersResult = await container.catalog.getPriceTiers.execute(v.id);
+      if (!tiersResult.success) {
+        throw new Error(tiersResult.error.message);
+      }
+      tiersByVariant[v.id] = tiersResult.data.map((t) => ({
+        minQty: t.minQty,
+        price: t.price.amount,
+      }));
+    })
+  );
+
   return (
     <div className="flex max-w-5xl flex-col gap-4">
       <div>
@@ -67,6 +82,7 @@ export default async function EditProductPage({
             sellPrice: String(v.sellPrice.amount),
             minStock: String(v.minStock),
             trackStock: v.trackStock,
+            tiers: tiersByVariant[v.id] ?? [],
           })),
         }}
         categories={categoriesResult.data.map((c) => ({

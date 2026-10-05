@@ -23,6 +23,7 @@ export interface SidebarUser {
   fullName: string;
   roleName: string;
   permissions: string[];
+  lowStockCount?: number;
 }
 
 interface MenuItem {
@@ -61,7 +62,7 @@ const MENU_ITEMS: MenuItem[] = [
     label: "Pelanggan",
     icon: Users,
     requiredPermissions: ["customer.manage"],
-    available: false,
+    available: true,
   },
   {
     href: "/laporan/penjualan",
@@ -152,6 +153,11 @@ export function Sidebar({ user }: { user: SidebarUser }) {
                     )}
                   >
                     {content}
+                    {item.href === "/stok" && (user.lowStockCount ?? 0) > 0 && (
+                      <Badge variant="destructive" className="text-[10px]">
+                        {user.lowStockCount}
+                      </Badge>
+                    )}
                   </Link>
                 ) : (
                   <span className="flex min-h-11 cursor-not-allowed items-center gap-3 rounded-md px-3 text-sm font-medium text-muted-foreground">

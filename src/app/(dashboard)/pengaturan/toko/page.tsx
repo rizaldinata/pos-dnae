@@ -4,6 +4,7 @@ import { requirePermission } from "@/modules/iam/presentation/actions/require-pe
 import { isErr } from "@/shared/kernel/result";
 import { SettingsNav } from "@/modules/settings/presentation/components/settings-nav";
 import { StoreSettingsForm } from "@/modules/settings/presentation/components/store-settings-form";
+import { PricingSettingsForm } from "@/modules/settings/presentation/components/pricing-settings-form";
 
 export const dynamic = "force-dynamic";
 
@@ -18,9 +19,15 @@ export default async function StoreSettingsPage() {
   }
 
   const container = await getAppContainer();
-  const result = await container.settings.getStoreSettings.execute();
+  const [result, pricingResult] = await Promise.all([
+    container.settings.getStoreSettings.execute(),
+    container.settings.getPricingSettings.execute(),
+  ]);
   if (isErr(result)) {
     throw new Error(result.error.message);
+  }
+  if (isErr(pricingResult)) {
+    throw new Error(pricingResult.error.message);
   }
 
   return (
@@ -33,6 +40,7 @@ export default async function StoreSettingsPage() {
         </p>
       </div>
       <StoreSettingsForm initial={result.data} />
+      <PricingSettingsForm initial={pricingResult.data} />
     </div>
   );
 }

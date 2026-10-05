@@ -15,6 +15,7 @@ import {
 } from "@/shared/ui/table";
 import { ProductSearch } from "@/modules/catalog/presentation/components/product-search";
 import { StockFilters } from "@/modules/inventory/presentation/components/stock-filters";
+import { AdjustStockDialog } from "@/modules/inventory/presentation/components/adjust-stock-dialog";
 import type { StockStatus } from "@/modules/inventory/domain/services/stock-policy";
 
 export const dynamic = "force-dynamic";
@@ -59,11 +60,16 @@ export default async function StockPage({
   }>;
 }) {
   const guard = await requirePermission("product.manage");
+  let canAdjust = guard.ok;
   if (!guard.ok) {
     const stockGuard = await requirePermission("stock.manage");
     if (!stockGuard.ok) {
       redirect("/forbidden");
     }
+    canAdjust = true;
+  } else {
+    const stockGuard = await requirePermission("stock.manage");
+    canAdjust = stockGuard.ok;
   }
 
   const params = await searchParams;
@@ -108,6 +114,13 @@ export default async function StockPage({
         <h1 className="text-2xl font-semibold">Stok</h1>
         <p className="text-sm text-muted-foreground">{total} varian</p>
       </div>
+      <div className="flex gap-2">
+        {canAdjust && (
+          <Button variant="outline" asChild className="min-h-11">
+            <Link href="/stok/opname">Stock opname</Link>
+          </Button>
+        )}
+      </div>
 
       <div className="flex flex-col gap-2">
         <ProductSearch initialQuery={query} />
@@ -131,6 +144,7 @@ export default async function StockPage({
               <TableHead className="text-right">Stok</TableHead>
               <TableHead className="text-right">Min</TableHead>
               <TableHead>Status</TableHead>
+              {canAdjust && <TableHead className="text-right">Aksi</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -166,12 +180,21 @@ export default async function StockPage({
                     </Badge>
                   )}
                 </TableCell>
+                {canAdjust && (
+                  <TableCell className="text-right">
+                    <AdjustStockDialog
+                      variantId={item.variantId}
+                      sku={item.sku}
+                      currentQty={item.qty}
+                    />
+                  </TableCell>
+                )}
               </TableRow>
             ))}
             {items.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={canAdjust ? 7 : 6}
                   className="text-center text-muted-foreground"
                 >
                   Tidak ada data stok

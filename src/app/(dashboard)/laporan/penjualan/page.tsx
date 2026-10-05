@@ -131,6 +131,9 @@ export default async function SalesReportPage({
         <Button variant="outline" asChild className="min-h-11">
           <Link href="/laporan/shift">Rekap Shift</Link>
         </Button>
+        <Button variant="outline" asChild className="min-h-11">
+          <Link href="/laporan/retur">Riwayat Retur</Link>
+        </Button>
       </div>
 
       <ReportFilters

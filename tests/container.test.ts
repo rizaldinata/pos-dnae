@@ -32,5 +32,8 @@ describe("Dependency Injection Container", () => {
     expect(container.shifts).toBeDefined();
     expect(container.shifts.openShift).toBeDefined();
     expect(container.shifts.closeShift).toBeDefined();
+    expect(container.customers).toBeDefined();
+    expect(container.customers.createCustomer).toBeDefined();
+    expect(container.customers.getCustomerHistory).toBeDefined();
   });
 });

@@ -9,6 +9,16 @@ import {
   CheckoutUseCase,
   GetSaleReceiptUseCase,
 } from "@/modules/sales/application/use-cases/checkout.use-case";
+import {
+  CreateReturnUseCase,
+  ListReturnsUseCase,
+  VoidSaleUseCase,
+} from "@/modules/sales/application/use-cases/void-return.use-cases";
+import {
+  HoldSaleUseCase,
+  ListHeldSalesUseCase,
+  ResumeSaleUseCase,
+} from "@/modules/sales/application/use-cases/hold.use-cases";
 import { SearchProductsForPOSUseCase } from "@/modules/sales/application/use-cases/search-products-pos.use-case";
 
 // IAM module dependencies
@@ -23,6 +33,7 @@ import { CreateUserUseCase } from "@/modules/iam/application/use-cases/create-us
 import { UpdateUserUseCase } from "@/modules/iam/application/use-cases/update-user.use-case";
 
 // Catalog module dependencies
+import { SupabasePriceTierRepository } from "@/modules/catalog/infrastructure/supabase-price-tier.repository";
 import { SupabaseProductRepository } from "@/modules/catalog/infrastructure/supabase-product.repository";
 import {
   SupabaseBrandRepository,
@@ -44,6 +55,10 @@ import {
   UpdateCategoryUseCase,
 } from "@/modules/catalog/application/use-cases/category.use-cases";
 import {
+  GetPriceTiersUseCase,
+  SetPriceTiersUseCase,
+} from "@/modules/catalog/application/use-cases/price-tier.use-cases";
+import {
   CreateBrandUseCase,
   CreateUnitUseCase,
   DeleteBrandUseCase,
@@ -60,11 +75,22 @@ import {
   SupabaseStockMovementRepository,
 } from "@/modules/inventory/infrastructure/supabase-stock.repository";
 import {
+  GetLowStockCountUseCase,
+  GetLowStockItemsUseCase,
   GetStockCardUseCase,
   GetStockUseCase,
   ListStockOverviewUseCase,
   RecordStockMovementUseCase,
 } from "@/modules/inventory/application/use-cases/stock.use-cases";
+import {
+  AdjustStockUseCase,
+  ApproveOpnameUseCase,
+  CreateOpnameUseCase,
+  GetOpnameDetailUseCase,
+  ListOpnamesUseCase,
+  UpdateOpnameItemUseCase,
+} from "@/modules/inventory/application/use-cases/opname.use-cases";
+import { SupabaseStockOpnameRepository } from "@/modules/inventory/infrastructure/supabase-stock-opname.repository";
 
 // Settings module dependencies
 import { SupabasePaymentMethodRepository } from "@/modules/settings/infrastructure/supabase-payment-method.repository";
@@ -81,6 +107,10 @@ import {
   CreatePaymentMethodUseCase,
   UpdatePaymentMethodUseCase,
 } from "@/modules/settings/application/use-cases/payment-method.use-cases";
+import {
+  GetPricingSettingsUseCase,
+  UpdatePricingSettingsUseCase,
+} from "@/modules/settings/application/use-cases/pricing-settings.use-cases";
 
 // Reporting module dependencies
 import { SupabaseSalesReportRepository } from "@/modules/reporting/infrastructure/supabase-sales-report.repository";
@@ -88,6 +118,18 @@ import {
   GetSalesReportUseCase,
   GetRecentTransactionsUseCase,
 } from "@/modules/reporting/application/use-cases/get-sales-report.use-case";
+
+// Customers module dependencies
+import { SupabaseCustomerRepository } from "@/modules/customers/infrastructure/supabase-customer.repository";
+import {
+  CreateCustomerUseCase,
+  DeleteCustomerUseCase,
+  GetCustomerHistoryUseCase,
+  GetCustomerUseCase,
+  ListCustomersUseCase,
+  SearchCustomersUseCase,
+  UpdateCustomerUseCase,
+} from "@/modules/customers/application/use-cases/customer.use-cases";
 
 // Shifts module dependencies
 import { SupabaseShiftRepository } from "@/modules/shifts/infrastructure/supabase-shift.repository";
@@ -105,6 +147,12 @@ export interface AppContainer {
     checkout: CheckoutUseCase;
     getSaleReceipt: GetSaleReceiptUseCase;
     searchProductsForPOS: SearchProductsForPOSUseCase;
+    voidSale: VoidSaleUseCase;
+    createReturn: CreateReturnUseCase;
+    listReturns: ListReturnsUseCase;
+    holdSale: HoldSaleUseCase;
+    listHeldSales: ListHeldSalesUseCase;
+    resumeSale: ResumeSaleUseCase;
   };
   iam: {
     login: LoginUseCase;
@@ -133,12 +181,22 @@ export interface AppContainer {
     createUnit: CreateUnitUseCase;
     updateUnit: UpdateUnitUseCase;
     deleteUnit: DeleteUnitUseCase;
+    getPriceTiers: GetPriceTiersUseCase;
+    setPriceTiers: SetPriceTiersUseCase;
   };
   inventory: {
     getStock: GetStockUseCase;
     listStockOverview: ListStockOverviewUseCase;
     getStockCard: GetStockCardUseCase;
     recordStockMovement: RecordStockMovementUseCase;
+    getLowStockCount: GetLowStockCountUseCase;
+    getLowStockItems: GetLowStockItemsUseCase;
+    adjustStock: AdjustStockUseCase;
+    createOpname: CreateOpnameUseCase;
+    updateOpnameItem: UpdateOpnameItemUseCase;
+    approveOpname: ApproveOpnameUseCase;
+    listOpnames: ListOpnamesUseCase;
+    getOpnameDetail: GetOpnameDetailUseCase;
   };
   settings: {
     listActivePaymentMethods: ListActivePaymentMethodsUseCase;
@@ -147,10 +205,21 @@ export interface AppContainer {
     updateStoreSettings: UpdateStoreSettingsUseCase;
     createPaymentMethod: CreatePaymentMethodUseCase;
     updatePaymentMethod: UpdatePaymentMethodUseCase;
+    getPricingSettings: GetPricingSettingsUseCase;
+    updatePricingSettings: UpdatePricingSettingsUseCase;
   };
   reporting: {
     getSalesReport: GetSalesReportUseCase;
     getRecentTransactions: GetRecentTransactionsUseCase;
+  };
+  customers: {
+    createCustomer: CreateCustomerUseCase;
+    updateCustomer: UpdateCustomerUseCase;
+    deleteCustomer: DeleteCustomerUseCase;
+    getCustomer: GetCustomerUseCase;
+    listCustomers: ListCustomersUseCase;
+    searchCustomers: SearchCustomersUseCase;
+    getCustomerHistory: GetCustomerHistoryUseCase;
   };
   shifts: {
     openShift: OpenShiftUseCase;
@@ -177,6 +246,7 @@ export function createContainer(
 
   // 2. Use Cases
   const productRepository = new SupabaseProductRepository(supabase);
+  const priceTierRepository = new SupabasePriceTierRepository(supabase);
   const categoryRepository = new SupabaseCategoryRepository(supabase);
   const brandRepository = new SupabaseBrandRepository(supabase);
   const unitRepository = new SupabaseUnitRepository(supabase);
@@ -185,10 +255,12 @@ export function createContainer(
     supabase,
     stockRepository
   );
+  const stockOpnameRepository = new SupabaseStockOpnameRepository(supabase);
   const paymentMethodRepository = new SupabasePaymentMethodRepository(supabase);
   const settingsRepository = new SupabaseSettingsRepository(supabase);
   const salesReportRepository = new SupabaseSalesReportRepository(supabase);
   const shiftRepository = new SupabaseShiftRepository(supabase);
+  const customerRepository = new SupabaseCustomerRepository(supabase);
 
   return {
     sales: {
@@ -196,10 +268,21 @@ export function createContainer(
         saleRepository,
         productRepository,
         stockRepository,
-        shiftRepository
+        shiftRepository,
+        priceTierRepository,
+        settingsRepository
       ),
       getSaleReceipt: new GetSaleReceiptUseCase(saleRepository),
-      searchProductsForPOS: new SearchProductsForPOSUseCase(productRepository),
+      searchProductsForPOS: new SearchProductsForPOSUseCase(
+        productRepository,
+        priceTierRepository
+      ),
+      voidSale: new VoidSaleUseCase(saleRepository),
+      createReturn: new CreateReturnUseCase(saleRepository),
+      listReturns: new ListReturnsUseCase(saleRepository),
+      holdSale: new HoldSaleUseCase(saleRepository),
+      listHeldSales: new ListHeldSalesUseCase(saleRepository),
+      resumeSale: new ResumeSaleUseCase(saleRepository),
     },
     iam: {
       login: new LoginUseCase(userRepository, authService),
@@ -228,6 +311,11 @@ export function createContainer(
       createUnit: new CreateUnitUseCase(unitRepository),
       updateUnit: new UpdateUnitUseCase(unitRepository),
       deleteUnit: new DeleteUnitUseCase(unitRepository),
+      getPriceTiers: new GetPriceTiersUseCase(priceTierRepository),
+      setPriceTiers: new SetPriceTiersUseCase(
+        priceTierRepository,
+        productRepository
+      ),
     },
     inventory: {
       getStock: new GetStockUseCase(stockRepository),
@@ -240,6 +328,14 @@ export function createContainer(
         stockRepository,
         stockMovementRepository
       ),
+      getLowStockCount: new GetLowStockCountUseCase(stockRepository),
+      getLowStockItems: new GetLowStockItemsUseCase(stockRepository),
+      adjustStock: new AdjustStockUseCase(stockRepository),
+      createOpname: new CreateOpnameUseCase(stockOpnameRepository),
+      listOpnames: new ListOpnamesUseCase(stockOpnameRepository),
+      getOpnameDetail: new GetOpnameDetailUseCase(stockOpnameRepository),
+      updateOpnameItem: new UpdateOpnameItemUseCase(stockOpnameRepository),
+      approveOpname: new ApproveOpnameUseCase(stockOpnameRepository),
     },
     settings: {
       listActivePaymentMethods: new ListActivePaymentMethodsUseCase(
@@ -256,12 +352,25 @@ export function createContainer(
       updatePaymentMethod: new UpdatePaymentMethodUseCase(
         paymentMethodRepository
       ),
+      getPricingSettings: new GetPricingSettingsUseCase(settingsRepository),
+      updatePricingSettings: new UpdatePricingSettingsUseCase(
+        settingsRepository
+      ),
     },
     reporting: {
       getSalesReport: new GetSalesReportUseCase(salesReportRepository),
       getRecentTransactions: new GetRecentTransactionsUseCase(
         salesReportRepository
       ),
+    },
+    customers: {
+      createCustomer: new CreateCustomerUseCase(customerRepository),
+      updateCustomer: new UpdateCustomerUseCase(customerRepository),
+      deleteCustomer: new DeleteCustomerUseCase(customerRepository),
+      getCustomer: new GetCustomerUseCase(customerRepository),
+      listCustomers: new ListCustomersUseCase(customerRepository),
+      searchCustomers: new SearchCustomersUseCase(customerRepository),
+      getCustomerHistory: new GetCustomerHistoryUseCase(customerRepository),
     },
     shifts: {
       openShift: new OpenShiftUseCase(shiftRepository),

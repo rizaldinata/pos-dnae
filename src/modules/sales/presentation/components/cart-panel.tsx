@@ -1,13 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   useCartStore,
   toCartItemEntities,
   type DiscountData,
 } from "@/modules/sales/presentation/hooks/use-cart-store";
-import { Discount } from "@/modules/sales/domain/value-objects/discount";
-import { PricingCalculator } from "@/modules/sales/domain/entities/cart";
+import { useCartTotals } from "@/modules/sales/presentation/hooks/use-cart-totals";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
@@ -97,19 +96,7 @@ export function CartPanel() {
   const [payOpen, setPayOpen] = useState(false);
   const [paySession, setPaySession] = useState(0);
 
-  const totals = useMemo(() => {
-    const entities = toCartItemEntities(items);
-    const trx = transactionDiscount
-      ? transactionDiscount.kind === "percent"
-        ? Discount.percent(Math.min(transactionDiscount.value, 100))
-        : Discount.amount(transactionDiscount.value)
-      : null;
-    try {
-      return PricingCalculator.calculate(entities, trx);
-    } catch {
-      return PricingCalculator.calculate(entities, null);
-    }
-  }, [items, transactionDiscount]);
+  const { pricingTotals: totals, tax } = useCartTotals();
 
   function changeQty(variantId: string, qty: number) {
     const error = setQty(variantId, qty);
@@ -208,7 +195,17 @@ export function CartPanel() {
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-muted-foreground">
+                        {item.tierApplied && (
+                          <span className="mr-1 line-through">
+                            {formatRupiah(item.basePrice)}
+                          </span>
+                        )}
                         {formatRupiah(item.unitPrice)}
+                        {item.tierApplied && (
+                          <span className="ml-1 rounded bg-green-100 px-1 text-[10px] text-green-700">
+                            Grosir
+                          </span>
+                        )}
                       </p>
                       <p className="text-sm font-semibold">
                         {formatRupiah(net)}
@@ -252,9 +249,21 @@ export function CartPanel() {
               </span>
             )}
           </div>
+          {tax.taxTotal > 0 && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Pajak</span>
+              <span>{formatRupiah(tax.taxTotal)}</span>
+            </div>
+          )}
+          {tax.serviceTotal > 0 && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Layanan</span>
+              <span>{formatRupiah(tax.serviceTotal)}</span>
+            </div>
+          )}
           <div className="flex justify-between text-lg font-bold">
             <span>Total</span>
-            <span>{formatRupiah(totals.grandTotal)}</span>
+            <span>{formatRupiah(tax.grandTotal)}</span>
           </div>
           <Button
             className="mt-1 min-h-12 text-base"

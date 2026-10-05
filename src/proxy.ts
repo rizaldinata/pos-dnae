@@ -11,8 +11,13 @@ interface RouteRule {
 const ROUTE_RULES: RouteRule[] = [
   { prefix: "/pengaturan/users", roles: ["Owner"] },
   { prefix: "/pengaturan", roles: ["Owner", "Admin"] },
+  { prefix: "/pelanggan", roles: ["Owner", "Admin", "Manajer"] },
   { prefix: "/produk", roles: ["Owner", "Admin"] },
   { prefix: "/stok", roles: ["Owner", "Admin", "Manajer"] },
+  {
+    prefix: "/laporan/transaksi",
+    roles: ["Owner", "Admin", "Manajer", "Kasir"],
+  },
   { prefix: "/laporan", roles: ["Owner", "Admin", "Manajer"] },
   { prefix: "/kasir", roles: ["Owner", "Admin", "Manajer", "Kasir"] },
 ];

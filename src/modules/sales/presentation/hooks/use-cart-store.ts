@@ -12,8 +12,18 @@ import {
   Discount,
   type DiscountKind,
 } from "@/modules/sales/domain/value-objects/discount";
+import { priceForQty } from "@/modules/catalog/domain/entities/price-tier";
+import {
+  DEFAULT_PRICING_SETTINGS,
+  type PricingSettings,
+} from "@/modules/sales/domain/services/tax-calculator";
 import { DiscountPolicy } from "@/modules/sales/domain/services/discount-policy";
 import { Money } from "@/shared/lib/money";
+
+export interface CartTier {
+  minQty: number;
+  price: number;
+}
 
 export interface CartItemData {
   variantId: string;
@@ -23,6 +33,9 @@ export interface CartItemData {
   sku: string;
   qty: number;
   unitPrice: number;
+  basePrice: number;
+  tierApplied: boolean;
+  tiers: CartTier[];
   costPrice: number;
   stockQty: number | null;
   trackStock: boolean;
@@ -34,11 +47,23 @@ export interface DiscountData {
   value: number;
 }
 
+export interface SelectedCustomer {
+  id: string;
+  name: string;
+  points: number;
+  receivableBalance: number;
+}
+
 interface CartState {
   items: CartItemData[];
   transactionDiscount: DiscountData | null;
+  selectedCustomer: SelectedCustomer | null;
+  pricing: PricingSettings;
   roleName: string;
+  setPricing: (pricing: PricingSettings) => void;
   setRole: (roleName: string) => void;
+  selectCustomer: (customer: SelectedCustomer) => void;
+  clearCustomer: () => void;
   addItem: (variant: POSVariant) => string | null;
   setQty: (variantId: string, qty: number) => string | null;
   removeItem: (variantId: string) => void;
@@ -112,9 +137,17 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
       transactionDiscount: null,
+      selectedCustomer: null,
+      pricing: { ...DEFAULT_PRICING_SETTINGS },
       roleName: "Kasir",
 
+      setPricing: (pricing) => set({ pricing }),
+
       setRole: (roleName) => set({ roleName }),
+
+      selectCustomer: (customer) => set({ selectedCustomer: customer }),
+
+      clearCustomer: () => set({ selectedCustomer: null }),
 
       addItem: (variant) => {
         const existing = get().items.find(
@@ -123,6 +156,14 @@ export const useCartStore = create<CartState>()(
         if (existing) {
           return get().setQty(variant.variantId, existing.qty + 1);
         }
+        const effective = priceForQty(
+          (variant.tiers ?? []).map((t) => ({
+            minQty: t.minQty,
+            price: Money.create(t.price),
+          })),
+          1,
+          Money.create(variant.sellPrice)
+        ).amount;
         const data: CartItemData = {
           variantId: variant.variantId,
           productId: variant.productId,
@@ -130,7 +171,13 @@ export const useCartStore = create<CartState>()(
           variantName: variant.variantName,
           sku: variant.sku,
           qty: 1,
-          unitPrice: variant.sellPrice,
+          unitPrice: effective,
+          basePrice: variant.sellPrice,
+          tierApplied: effective !== variant.sellPrice,
+          tiers: (variant.tiers ?? []).map((t) => ({
+            minQty: t.minQty,
+            price: t.price,
+          })),
           costPrice: variant.costPrice,
           stockQty: variant.stockQty,
           trackStock: variant.trackStock,
@@ -157,9 +204,26 @@ export const useCartStore = create<CartState>()(
           return stockError;
         }
         set({
-          items: get().items.map((i) =>
-            i.variantId === variantId ? { ...i, qty: Math.floor(qty) } : i
-          ),
+          items: get().items.map((i) => {
+            if (i.variantId !== variantId) {
+              return i;
+            }
+            const nextQty = Math.floor(qty);
+            const effective = priceForQty(
+              i.tiers.map((t) => ({
+                minQty: t.minQty,
+                price: Money.create(t.price),
+              })),
+              nextQty,
+              Money.create(i.basePrice)
+            ).amount;
+            return {
+              ...i,
+              qty: nextQty,
+              unitPrice: effective,
+              tierApplied: effective !== i.basePrice,
+            };
+          }),
         });
         return null;
       },
@@ -193,7 +257,8 @@ export const useCartStore = create<CartState>()(
         return null;
       },
 
-      clearCart: () => set({ items: [], transactionDiscount: null }),
+      clearCart: () =>
+        set({ items: [], transactionDiscount: null, selectedCustomer: null }),
     }),
     {
       name: "pos-cart",
@@ -201,6 +266,8 @@ export const useCartStore = create<CartState>()(
       partialize: (state) => ({
         items: state.items,
         transactionDiscount: state.transactionDiscount,
+        selectedCustomer: state.selectedCustomer,
+        pricing: state.pricing,
       }),
     }
   )

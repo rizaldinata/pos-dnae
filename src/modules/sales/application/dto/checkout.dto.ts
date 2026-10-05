@@ -23,7 +23,15 @@ export const CheckoutPaymentSchema = z.object({
   referenceNo: z.string().trim().max(100).nullish(),
 });
 
+export const TransactionDiscountSchema = z.object({
+  kind: z.enum(["percent", "amount"], { error: "Jenis diskon tidak valid" }),
+  value: z
+    .number({ error: "Nilai diskon harus angka" })
+    .min(0, { error: "Diskon minimal 0" }),
+});
+
 export const CheckoutSchema = z.object({
+  transactionDiscount: TransactionDiscountSchema.optional(),
   items: z
     .array(CheckoutItemSchema, { error: "Item tidak valid" })
     .min(1, { error: "Keranjang kosong, tidak dapat checkout" })

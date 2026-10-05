@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { Fragment, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   createProductAction,
   updateProductAction,
   type ProductActionState,
 } from "@/modules/catalog/presentation/actions/product.action";
+import { setPriceTiersAction } from "@/modules/catalog/presentation/actions/price-tier.action";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
@@ -19,6 +20,11 @@ import {
   TableRow,
 } from "@/shared/ui/table";
 
+export interface VariantTierRow {
+  minQty: string;
+  price: string;
+}
+
 export interface VariantFormRow {
   key: string;
   id?: string;
@@ -29,6 +35,7 @@ export interface VariantFormRow {
   sellPrice: string;
   minStock: string;
   trackStock: boolean;
+  tiers: VariantTierRow[];
 }
 
 export interface ProductFormInitial {
@@ -39,7 +46,9 @@ export interface ProductFormInitial {
   unitId: string;
   description: string;
   isActive: boolean;
-  variants: Omit<VariantFormRow, "key">[];
+  variants: (Omit<VariantFormRow, "key" | "tiers"> & {
+    tiers: { minQty: number; price: number }[];
+  })[];
 }
 
 export interface MasterOption {
@@ -60,6 +69,7 @@ function newVariantRow(): VariantFormRow {
     sellPrice: "",
     minStock: "",
     trackStock: true,
+    tiers: [],
   };
 }
 
@@ -90,9 +100,14 @@ export function ProductForm({
   const [description, setDescription] = useState(initial?.description ?? "");
   const [isActive, setIsActive] = useState(initial?.isActive ?? true);
   const [variants, setVariants] = useState<VariantFormRow[]>(
-    initial?.variants.map((v, i) => ({ ...v, key: v.id ?? `init-${i}` })) ?? [
-      newVariantRow(),
-    ]
+    initial?.variants.map((v, i) => ({
+      ...v,
+      key: v.id ?? `init-${i}`,
+      tiers: v.tiers.map((t) => ({
+        minQty: String(t.minQty),
+        price: String(t.price),
+      })),
+    })) ?? [newVariantRow()]
   );
 
   function updateVariant(key: string, patch: Partial<VariantFormRow>) {
@@ -105,6 +120,74 @@ export function ProductForm({
     setVariants((prev) =>
       prev.length > 1 ? prev.filter((v) => v.key !== key) : prev
     );
+  }
+
+  function updateTier(
+    key: string,
+    index: number,
+    patch: Partial<VariantTierRow>
+  ) {
+    setVariants((prev) =>
+      prev.map((v) =>
+        v.key === key
+          ? {
+              ...v,
+              tiers: v.tiers.map((t, i) =>
+                i === index ? { ...t, ...patch } : t
+              ),
+            }
+          : v
+      )
+    );
+  }
+
+  function addTier(key: string) {
+    setVariants((prev) =>
+      prev.map((v) =>
+        v.key === key
+          ? { ...v, tiers: [...v.tiers, { minQty: "", price: "" }] }
+          : v
+      )
+    );
+  }
+
+  function removeTier(key: string, index: number) {
+    setVariants((prev) =>
+      prev.map((v) =>
+        v.key === key
+          ? { ...v, tiers: v.tiers.filter((_, i) => i !== index) }
+          : v
+      )
+    );
+  }
+
+  const [expandedTiers, setExpandedTiers] = useState<string | null>(null);
+
+  async function persistTiers(
+    savedVariants: { id: string; sku: string }[] | undefined,
+    formVariants: VariantFormRow[]
+  ): Promise<string | null> {
+    const bySku = new Map(
+      savedVariants?.map((v) => [v.sku.toUpperCase(), v.id])
+    );
+    for (const v of formVariants) {
+      const variantId = v.id || bySku.get(v.sku.toUpperCase());
+      if (!variantId) {
+        continue;
+      }
+      const tiers = v.tiers
+        .filter((t) => t.minQty !== "" && t.price !== "")
+        .map((t) => ({
+          minQty: Math.floor(Number(t.minQty) || 0),
+          price: Math.round(Number(t.price) || 0),
+        }))
+        .filter((t) => t.minQty > 0 && t.price >= 0);
+      const result = await setPriceTiersAction(variantId, tiers);
+      if (!result.success) {
+        return result.message;
+      }
+    }
+    return null;
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -142,13 +225,20 @@ export function ProductForm({
         mode === "create"
           ? await createProductAction(initialState, formData)
           : await updateProductAction(initialState, formData);
+      if (!result.success) {
+        setState(result);
+        return;
+      }
+      const tierError = await persistTiers(result.variants, variants);
+      if (tierError) {
+        setState({
+          success: false,
+          message: `Produk tersimpan, tetapi harga grosir gagal: ${tierError}`,
+        });
+        return;
+      }
       setState(result);
-      if (
-        result.success &&
-        mode === "create" &&
-        "productId" in result &&
-        result.productId
-      ) {
+      if (mode === "create" && result.productId) {
         router.push(`/produk/${result.productId}`);
       }
     });
@@ -283,96 +373,183 @@ export function ProductForm({
               </TableHeader>
               <TableBody>
                 {variants.map((v) => (
-                  <TableRow key={v.key}>
-                    <TableCell>
-                      <Input
-                        value={v.sku}
-                        onChange={(e) =>
-                          updateVariant(v.key, {
-                            sku: e.target.value.toUpperCase(),
-                          })
-                        }
-                        required
-                        disabled={pending}
-                        className="min-w-28 font-mono"
-                        aria-label="SKU varian"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        value={v.barcode}
-                        onChange={(e) =>
-                          updateVariant(v.key, { barcode: e.target.value })
-                        }
-                        disabled={pending}
-                        className="min-w-28 font-mono"
-                        aria-label="Barcode varian"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        value={v.variantName}
-                        onChange={(e) =>
-                          updateVariant(v.key, { variantName: e.target.value })
-                        }
-                        disabled={pending}
-                        className="min-w-24"
-                        aria-label="Nama varian"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        type="number"
-                        min={0}
-                        value={v.costPrice}
-                        onChange={(e) =>
-                          updateVariant(v.key, { costPrice: e.target.value })
-                        }
-                        required
-                        disabled={pending}
-                        className="min-w-24 text-right"
-                        aria-label="Harga modal"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        type="number"
-                        min={0}
-                        value={v.sellPrice}
-                        onChange={(e) =>
-                          updateVariant(v.key, { sellPrice: e.target.value })
-                        }
-                        required
-                        disabled={pending}
-                        className="min-w-24 text-right"
-                        aria-label="Harga jual"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        type="number"
-                        min={0}
-                        value={v.minStock}
-                        onChange={(e) =>
-                          updateVariant(v.key, { minStock: e.target.value })
-                        }
-                        disabled={pending}
-                        className="w-20 text-right"
-                        aria-label="Stok minimum"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        disabled={pending || variants.length <= 1}
-                        onClick={() => removeVariant(v.key)}
-                      >
-                        Hapus
-                      </Button>
-                    </TableCell>
-                  </TableRow>
+                  <Fragment key={v.key}>
+                    <TableRow>
+                      <TableCell>
+                        <Input
+                          value={v.sku}
+                          onChange={(e) =>
+                            updateVariant(v.key, {
+                              sku: e.target.value.toUpperCase(),
+                            })
+                          }
+                          required
+                          disabled={pending}
+                          className="min-w-28 font-mono"
+                          aria-label="SKU varian"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          value={v.barcode}
+                          onChange={(e) =>
+                            updateVariant(v.key, { barcode: e.target.value })
+                          }
+                          disabled={pending}
+                          className="min-w-28 font-mono"
+                          aria-label="Barcode varian"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          value={v.variantName}
+                          onChange={(e) =>
+                            updateVariant(v.key, {
+                              variantName: e.target.value,
+                            })
+                          }
+                          disabled={pending}
+                          className="min-w-24"
+                          aria-label="Nama varian"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          min={0}
+                          value={v.costPrice}
+                          onChange={(e) =>
+                            updateVariant(v.key, { costPrice: e.target.value })
+                          }
+                          required
+                          disabled={pending}
+                          className="min-w-24 text-right"
+                          aria-label="Harga modal"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          min={0}
+                          value={v.sellPrice}
+                          onChange={(e) =>
+                            updateVariant(v.key, { sellPrice: e.target.value })
+                          }
+                          required
+                          disabled={pending}
+                          className="min-w-24 text-right"
+                          aria-label="Harga jual"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          min={0}
+                          value={v.minStock}
+                          onChange={(e) =>
+                            updateVariant(v.key, { minStock: e.target.value })
+                          }
+                          disabled={pending}
+                          className="w-20 text-right"
+                          aria-label="Stok minimum"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <Button
+                            type="button"
+                            variant={v.tiers.length > 0 ? "secondary" : "ghost"}
+                            size="sm"
+                            disabled={pending}
+                            onClick={() =>
+                              setExpandedTiers((prev) =>
+                                prev === v.key ? null : v.key
+                              )
+                            }
+                            aria-label={`Harga grosir ${v.sku || "varian"}`}
+                          >
+                            Grosir
+                            {v.tiers.length > 0 ? ` (${v.tiers.length})` : ""}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            disabled={pending || variants.length <= 1}
+                            onClick={() => removeVariant(v.key)}
+                          >
+                            Hapus
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                    {expandedTiers === v.key && (
+                      <TableRow key={`${v.key}-tiers`}>
+                        <TableCell colSpan={7}>
+                          <div className="flex flex-col gap-2 rounded-md bg-muted/50 p-2">
+                            <p className="text-xs font-medium">
+                              Harga grosir — berlaku otomatis saat qty mencapai
+                              batas (harga reguler {v.sellPrice || 0})
+                            </p>
+                            {v.tiers.map((t, i) => (
+                              <div key={i} className="flex items-center gap-2">
+                                <span className="text-xs">≥</span>
+                                <Input
+                                  type="number"
+                                  min={1}
+                                  value={t.minQty}
+                                  onChange={(e) =>
+                                    updateTier(v.key, i, {
+                                      minQty: e.target.value,
+                                    })
+                                  }
+                                  disabled={pending}
+                                  aria-label="Qty minimum grosir"
+                                  className="h-9 w-24 text-right"
+                                  placeholder="Qty"
+                                />
+                                <span className="text-xs">Rp</span>
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  value={t.price}
+                                  onChange={(e) =>
+                                    updateTier(v.key, i, {
+                                      price: e.target.value,
+                                    })
+                                  }
+                                  disabled={pending}
+                                  aria-label="Harga grosir"
+                                  className="h-9 w-32 text-right"
+                                  placeholder="Harga"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled={pending}
+                                  onClick={() => removeTier(v.key, i)}
+                                >
+                                  Hapus
+                                </Button>
+                              </div>
+                            ))}
+                            <div>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={pending || v.tiers.length >= 10}
+                                onClick={() => addTier(v.key)}
+                              >
+                                Tambah tier
+                              </Button>
+                            </div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </Fragment>
                 ))}
               </TableBody>
             </Table>

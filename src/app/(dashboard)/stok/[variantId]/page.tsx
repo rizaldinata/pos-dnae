@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@/shared/ui/table";
 import { StockMovementTypeFilter } from "@/modules/inventory/presentation/components/stock-movement-type-filter";
+import { StockMovementChart } from "@/modules/inventory/presentation/components/stock-movement-chart";
 import { isStockMovementType } from "@/modules/inventory/domain/entities/stock";
 
 export const dynamic = "force-dynamic";
@@ -71,6 +72,14 @@ export default async function StockCardPage({
   }
 
   const totalPages = Math.max(Math.ceil(total / PAGE_SIZE), 1);
+
+  const chartPoints = movements.map((m) => ({
+    id: m.id,
+    createdAt: formatDateTime(m.createdAt),
+    label: formatDateTime(m.createdAt).slice(0, 6),
+    balanceAfter: m.balanceAfter,
+    qtyChange: m.qtyChange,
+  }));
 
   return (
     <div className="flex max-w-5xl flex-col gap-4">
@@ -136,6 +145,8 @@ export default async function StockCardPage({
         <StockMovementTypeFilter currentType={query.type ?? ""} />
       </div>
 
+      {!type && <StockMovementChart points={chartPoints} />}
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -144,6 +155,7 @@ export default async function StockCardPage({
               <TableHead>Tipe</TableHead>
               <TableHead className="text-right">Perubahan</TableHead>
               <TableHead className="text-right">Saldo</TableHead>
+              <TableHead>Referensi</TableHead>
               <TableHead>Catatan</TableHead>
             </TableRow>
           </TableHeader>
@@ -162,6 +174,25 @@ export default async function StockCardPage({
                   {m.qtyChange > 0 ? `+${m.qtyChange}` : m.qtyChange}
                 </TableCell>
                 <TableCell className="text-right">{m.balanceAfter}</TableCell>
+                <TableCell>
+                  {m.refType === "sale" && m.refId ? (
+                    <Link
+                      href={`/laporan/transaksi/${m.refId}`}
+                      className="text-xs hover:underline"
+                    >
+                      Transaksi
+                    </Link>
+                  ) : m.refType === "opname" && m.refId ? (
+                    <Link
+                      href={`/stok/opname/${m.refId}`}
+                      className="text-xs hover:underline"
+                    >
+                      Opname
+                    </Link>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">-</span>
+                  )}
+                </TableCell>
                 <TableCell className="max-w-48 truncate text-muted-foreground">
                   {m.note || "-"}
                 </TableCell>
@@ -170,7 +201,7 @@ export default async function StockCardPage({
             {movements.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={6}
                   className="text-center text-muted-foreground"
                 >
                   Belum ada pergerakan stok

@@ -1,6 +1,10 @@
 import type { Result } from "@/shared/kernel/result";
 import type { DomainError } from "@/shared/kernel/errors";
 import type {
+  AdjustStockRecord,
+  AdjustStockResult,
+} from "@/modules/inventory/domain/repositories/stock-opname.repository";
+import type {
   Stock,
   StockMovement,
   StockMovementType,
@@ -33,6 +37,10 @@ export interface IStockRepository {
   getOverviewByVariantId(
     variantId: string
   ): Promise<Result<StockOverview | null, DomainError>>;
+  adjustStock(
+    record: AdjustStockRecord
+  ): Promise<Result<AdjustStockResult, DomainError>>;
+  countLowStock(): Promise<Result<number, DomainError>>;
 }
 
 export interface RecordMovementRecord {

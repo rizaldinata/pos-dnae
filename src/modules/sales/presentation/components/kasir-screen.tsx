@@ -3,6 +3,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { useCartStore } from "@/modules/sales/presentation/hooks/use-cart-store";
 import { POSProductSearch } from "@/modules/sales/presentation/components/pos-product-search";
+import { CustomerPicker } from "@/modules/sales/presentation/components/customer-picker";
+import {
+  HoldButton,
+  HeldSalesDialog,
+} from "@/modules/sales/presentation/components/hold-button";
 import { CartPanel } from "@/modules/sales/presentation/components/cart-panel";
 import { OpenShiftDialog } from "@/modules/shifts/presentation/components/open-shift-dialog";
 import { CloseShiftDialog } from "@/modules/shifts/presentation/components/close-shift-dialog";
@@ -30,12 +35,19 @@ export function KasirScreen({
   userName,
   roleName,
   initialShift,
+  initialPricing,
 }: {
   userName: string;
   roleName: string;
   initialShift: ShiftDTO | null;
+  initialPricing: {
+    taxRate: number;
+    taxMode: "inclusive" | "exclusive";
+    serviceFeeRate: number;
+  };
 }) {
   const setRole = useCartStore((s) => s.setRole);
+  const setPricing = useCartStore((s) => s.setPricing);
   const [shift, setShift] = useState<ShiftDTO | null>(initialShift);
   const [now, setNow] = useState(() => Date.now());
 
@@ -46,7 +58,8 @@ export function KasirScreen({
 
   useEffect(() => {
     setRole(roleName);
-  }, [roleName, setRole]);
+    setPricing(initialPricing);
+  }, [roleName, setRole, initialPricing, setPricing]);
 
   useEffect(() => {
     if (!shift) {
@@ -83,6 +96,13 @@ export function KasirScreen({
           )}
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+          <div className="mb-3">
+            <CustomerPicker />
+          </div>
+          <div className="mb-3 flex gap-2">
+            <HoldButton />
+            <HeldSalesDialog refreshKey={0} />
+          </div>
           <POSProductSearch onBarcode={() => {}} />
         </div>
       </section>
