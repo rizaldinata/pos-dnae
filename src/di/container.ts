@@ -89,6 +89,17 @@ import {
   GetRecentTransactionsUseCase,
 } from "@/modules/reporting/application/use-cases/get-sales-report.use-case";
 
+// Shifts module dependencies
+import { SupabaseShiftRepository } from "@/modules/shifts/infrastructure/supabase-shift.repository";
+import {
+  AddCashMovementUseCase,
+  CloseShiftUseCase,
+  GetCurrentShiftUseCase,
+  GetShiftSummaryUseCase,
+  ListShiftsUseCase,
+  OpenShiftUseCase,
+} from "@/modules/shifts/application/use-cases/shift.use-cases";
+
 export interface AppContainer {
   sales: {
     checkout: CheckoutUseCase;
@@ -141,6 +152,14 @@ export interface AppContainer {
     getSalesReport: GetSalesReportUseCase;
     getRecentTransactions: GetRecentTransactionsUseCase;
   };
+  shifts: {
+    openShift: OpenShiftUseCase;
+    getCurrentShift: GetCurrentShiftUseCase;
+    closeShift: CloseShiftUseCase;
+    addCashMovement: AddCashMovementUseCase;
+    getShiftSummary: GetShiftSummaryUseCase;
+    listShifts: ListShiftsUseCase;
+  };
 }
 
 /**
@@ -169,13 +188,15 @@ export function createContainer(
   const paymentMethodRepository = new SupabasePaymentMethodRepository(supabase);
   const settingsRepository = new SupabaseSettingsRepository(supabase);
   const salesReportRepository = new SupabaseSalesReportRepository(supabase);
+  const shiftRepository = new SupabaseShiftRepository(supabase);
 
   return {
     sales: {
       checkout: new CheckoutUseCase(
         saleRepository,
         productRepository,
-        stockRepository
+        stockRepository,
+        shiftRepository
       ),
       getSaleReceipt: new GetSaleReceiptUseCase(saleRepository),
       searchProductsForPOS: new SearchProductsForPOSUseCase(productRepository),
@@ -241,6 +262,14 @@ export function createContainer(
       getRecentTransactions: new GetRecentTransactionsUseCase(
         salesReportRepository
       ),
+    },
+    shifts: {
+      openShift: new OpenShiftUseCase(shiftRepository),
+      getCurrentShift: new GetCurrentShiftUseCase(shiftRepository),
+      closeShift: new CloseShiftUseCase(shiftRepository),
+      addCashMovement: new AddCashMovementUseCase(shiftRepository),
+      getShiftSummary: new GetShiftSummaryUseCase(shiftRepository),
+      listShifts: new ListShiftsUseCase(shiftRepository),
     },
   };
 }

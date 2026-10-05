@@ -5,6 +5,7 @@ import { requirePermission } from "@/modules/iam/presentation/actions/require-pe
 import { isErr } from "@/shared/kernel/result";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import {
   Table,
   TableBody,
@@ -120,9 +121,16 @@ export default async function SalesReportPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-semibold">Laporan Penjualan</h1>
-        <p className="text-sm text-muted-foreground">Periode: {report.label}</p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h1 className="text-2xl font-semibold">Laporan Penjualan</h1>
+          <p className="text-sm text-muted-foreground">
+            Periode: {report.label}
+          </p>
+        </div>
+        <Button variant="outline" asChild className="min-h-11">
+          <Link href="/laporan/shift">Rekap Shift</Link>
+        </Button>
       </div>
 
       <ReportFilters

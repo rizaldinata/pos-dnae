@@ -29,5 +29,8 @@ describe("Dependency Injection Container", () => {
     expect(container.settings.listActivePaymentMethods).toBeDefined();
     expect(container.reporting).toBeDefined();
     expect(container.reporting.getSalesReport).toBeDefined();
+    expect(container.shifts).toBeDefined();
+    expect(container.shifts.openShift).toBeDefined();
+    expect(container.shifts.closeShift).toBeDefined();
   });
 });

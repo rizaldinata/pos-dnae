@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { IProductRepository } from "@/modules/catalog/domain/repositories/product.repository";
 import type { IStockRepository } from "@/modules/inventory/domain/repositories/stock.repository";
+import type { IShiftRepository } from "@/modules/shifts/domain/repositories/shift.repository";
 import type {
   CreateSaleRecord,
   ISaleRepository,
@@ -17,6 +18,7 @@ import {
   SaleNotFoundError,
   UnderpaidError,
 } from "@/modules/sales/domain/errors";
+import { NoOpenShiftError } from "@/modules/shifts/domain/errors";
 import {
   NotFoundError,
   ValidationError,
@@ -39,7 +41,8 @@ export class CheckoutUseCase {
   constructor(
     private readonly sales: ISaleRepository,
     private readonly products: IProductRepository,
-    private readonly stocks: IStockRepository
+    private readonly stocks: IStockRepository,
+    private readonly shifts: IShiftRepository
   ) {}
 
   public async execute(
@@ -57,6 +60,16 @@ export class CheckoutUseCase {
     }
     const idempotencyKey =
       parsed.data.idempotencyKey ?? actor.idempotencyKey ?? crypto.randomUUID();
+
+    // Kasir wajib memiliki shift terbuka; transaksi dicatat ke shift tersebut.
+    const shiftResult = await this.shifts.getCurrentShift(actor.userId);
+    if (isErr(shiftResult)) {
+      return err(shiftResult.error);
+    }
+    if (shiftResult.data === null) {
+      return err(new NoOpenShiftError());
+    }
+    const shiftId = shiftResult.data.id;
 
     // Idempotency: kembalikan struk yang sudah ada bila key dipakai ulang.
     const existing =
@@ -135,6 +148,7 @@ export class CheckoutUseCase {
     const record: CreateSaleRecord = {
       idempotencyKey,
       userId: actor.userId,
+      shiftId,
       customerId: parsed.data.customerId ?? null,
       allowNegativeStock: false,
       items: cartItems.map((item) => ({

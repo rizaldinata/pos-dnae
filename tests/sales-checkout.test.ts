@@ -6,6 +6,9 @@ import type {
 } from "@/modules/sales/domain/repositories/sale.repository";
 import type { IProductRepository } from "@/modules/catalog/domain/repositories/product.repository";
 import type { IStockRepository } from "@/modules/inventory/domain/repositories/stock.repository";
+import type { IShiftRepository } from "@/modules/shifts/domain/repositories/shift.repository";
+import { Shift } from "@/modules/shifts/domain/entities/shift";
+import { Money as ShiftMoney } from "@/shared/lib/money";
 import { ProductVariant } from "@/modules/catalog/domain/entities/product";
 import { Sku } from "@/modules/catalog/domain/value-objects/sku";
 import { Money } from "@/shared/lib/money";
@@ -19,6 +22,7 @@ import {
   UnderpaidError,
   InsufficientStockError,
 } from "@/modules/sales/domain/errors";
+import { NoOpenShiftError } from "@/modules/shifts/domain/errors";
 import {
   NotFoundError,
   ValidationError,
@@ -73,6 +77,7 @@ describe("CheckoutUseCase", () => {
     stockQty?: number;
     variantExists?: boolean;
     existingReceipt?: boolean;
+    openShift?: boolean;
   }) {
     const stockQty = options?.stockQty ?? 100;
     const variantExists = options?.variantExists ?? true;
@@ -116,8 +121,43 @@ describe("CheckoutUseCase", () => {
       findReceiptByIdempotencyKey: async (key) =>
         ok(options?.existingReceipt ? makeReceipt("sale-lama", key) : null),
     };
+    const shifts: IShiftRepository = {
+      openShift: async () => {
+        throw new InvariantViolationError("not used");
+      },
+      getCurrentShift: async () =>
+        ok(
+          options?.openShift === false
+            ? null
+            : Shift.create(
+                {
+                  userId: "u-1",
+                  openedAt: new Date(),
+                  closedAt: null,
+                  openingCash: ShiftMoney.create(50000),
+                  expectedCash: null,
+                  closingCash: null,
+                  difference: null,
+                  status: "open",
+                },
+                "shift-1"
+              )
+        ),
+      findById: async () => ok(null),
+      closeShift: async () => {
+        throw new InvariantViolationError("not used");
+      },
+      getSummary: async () => {
+        throw new InvariantViolationError("not used");
+      },
+      addCashMovement: async () => {
+        throw new InvariantViolationError("not used");
+      },
+      listShifts: async () =>
+        ok({ items: [], total: 0, page: 1, pageSize: 20 }),
+    };
     return {
-      useCase: new CheckoutUseCase(sales, products, stocks),
+      useCase: new CheckoutUseCase(sales, products, stocks, shifts),
       createdCount: () => created,
       lastRecord: () => lastRecord,
     };
@@ -126,7 +166,7 @@ describe("CheckoutUseCase", () => {
   const tunai = "10000000-0000-4000-8000-000000000001";
 
   it("checkout tunai sukses dengan hitung ulang server", async () => {
-    const { useCase, createdCount } = setup();
+    const { useCase, createdCount, lastRecord } = setup();
     const result = await useCase.execute(
       { userId: "u-1", idempotencyKey: "aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa" },
       {
@@ -139,6 +179,23 @@ describe("CheckoutUseCase", () => {
     if (result.success) {
       expect(result.data.sale.grandTotal.amount).toBe(7000);
     }
+    expect(lastRecord()?.shiftId).toBe("shift-1");
+  });
+
+  it("menolak checkout tanpa shift terbuka", async () => {
+    const { useCase, createdCount } = setup({ openShift: false });
+    const result = await useCase.execute(
+      { userId: "u-1" },
+      {
+        items: [{ variantId: VARIANT_ID, qty: 1 }],
+        payments: [{ paymentMethodId: tunai, amount: 99999 }],
+      }
+    );
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toBeInstanceOf(NoOpenShiftError);
+    }
+    expect(createdCount()).toBe(0);
   });
 
   it("menolak keranjang kosong", async () => {

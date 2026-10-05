@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getAppContainer } from "@/di/container";
 import { isErr } from "@/shared/kernel/result";
 import { KasirScreen } from "@/modules/sales/presentation/components/kasir-screen";
+import { getCurrentShiftAction } from "@/modules/shifts/presentation/actions/shift.action";
 
 export const dynamic = "force-dynamic";
 
@@ -16,10 +17,13 @@ export default async function KasirPage() {
     redirect("/login");
   }
 
+  const initialShift = await getCurrentShiftAction();
+
   return (
     <KasirScreen
       userName={result.data.fullName}
       roleName={result.data.roleName}
+      initialShift={initialShift}
     />
   );
 }

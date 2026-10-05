@@ -1204,6 +1204,10 @@ export type Database = {
     };
     Functions: {
       build_sale_receipt: { Args: { p_sale_id: string }; Returns: Json };
+      close_shift: {
+        Args: { p_closing_cash: number; p_note?: string; p_shift_id: string };
+        Returns: Json;
+      };
       create_sale: { Args: { p_payload: Json }; Returns: Json };
       daily_sales_summary: {
         Args: { p_date: string };
@@ -1227,6 +1231,7 @@ export type Database = {
         };
       };
       next_number: { Args: { p_name: string }; Returns: number };
+      open_shift: { Args: { p_opening_cash: number }; Returns: Json };
       sales_by_date_range: {
         Args: { p_from: string; p_to: string };
         Returns: Database["public"]["CompositeTypes"]["sales_day_summary"][];
@@ -1237,6 +1242,7 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      shift_summary: { Args: { p_shift_id: string }; Returns: Json };
     };
     Enums: {
       [_ in never]: never;
