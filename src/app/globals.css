@@ -80,3 +80,21 @@ body {
     "rlig" 1,
     "calt" 1;
 }
+
+/* Struk thermal: saat cetak, hanya area struk yang terlihat (58/80mm). */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .receipt-print-area,
+  .receipt-print-area * {
+    visibility: visible;
+  }
+  .receipt-print-area {
+    position: absolute;
+    inset: 0;
+    width: 80mm;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+}

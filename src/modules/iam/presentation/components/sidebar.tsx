@@ -31,6 +31,7 @@ interface MenuItem {
   icon: React.ComponentType<{ className?: string }>;
   requiredPermissions: string[];
   available: boolean;
+  activePrefixes?: string[];
 }
 
 const MENU_ITEMS: MenuItem[] = [
@@ -39,7 +40,7 @@ const MENU_ITEMS: MenuItem[] = [
     label: "Kasir",
     icon: Store,
     requiredPermissions: [],
-    available: false,
+    available: true,
   },
   {
     href: "/produk",
@@ -53,7 +54,7 @@ const MENU_ITEMS: MenuItem[] = [
     label: "Stok",
     icon: Boxes,
     requiredPermissions: ["product.manage", "stock.manage"],
-    available: false,
+    available: true,
   },
   {
     href: "/pelanggan",
@@ -63,18 +64,20 @@ const MENU_ITEMS: MenuItem[] = [
     available: false,
   },
   {
-    href: "/laporan",
+    href: "/laporan/penjualan",
     label: "Laporan",
     icon: BarChart3,
     requiredPermissions: ["report.view"],
-    available: false,
+    available: true,
+    activePrefixes: ["/laporan"],
   },
   {
-    href: "/pengaturan/users",
+    href: "/pengaturan/toko",
     label: "Pengaturan",
     icon: Settings,
     requiredPermissions: ["user.manage", "settings.manage"],
     available: true,
+    activePrefixes: ["/pengaturan"],
   },
 ];
 
@@ -118,7 +121,12 @@ export function Sidebar({ user }: { user: SidebarUser }) {
           {visibleItems.map((item) => {
             const Icon = item.icon;
             const active =
-              pathname === item.href || pathname.startsWith(`${item.href}/`);
+              pathname === item.href ||
+              pathname.startsWith(`${item.href}/`) ||
+              (item.activePrefixes ?? []).some(
+                (prefix) =>
+                  pathname === prefix || pathname.startsWith(`${prefix}/`)
+              );
             const content = (
               <>
                 <Icon className="size-4" />

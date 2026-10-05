@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getAppContainer } from "@/di/container";
 import { isErr } from "@/shared/kernel/result";
 import { UserManagement } from "@/modules/iam/presentation/components/user-management";
+import { SettingsNav } from "@/modules/settings/presentation/components/settings-nav";
 
 export const metadata = {
   title: "Pengguna — POS DNAE",
@@ -30,17 +31,20 @@ export default async function UsersPage() {
   }
 
   return (
-    <UserManagement
-      users={usersResult.data.map((u) => ({
-        id: u.id,
-        email: u.email,
-        fullName: u.fullName,
-        roleId: u.roleId,
-        roleName: u.roleName,
-        isActive: u.isActive,
-      }))}
-      roles={rolesResult.data.map((r) => ({ id: r.id, name: r.name }))}
-      currentUserId={currentUser.id}
-    />
+    <div className="flex flex-col gap-4">
+      <SettingsNav showUsers={true} />
+      <UserManagement
+        users={usersResult.data.map((u) => ({
+          id: u.id,
+          email: u.email,
+          fullName: u.fullName,
+          roleId: u.roleId,
+          roleName: u.roleName,
+          isActive: u.isActive,
+        }))}
+        roles={rolesResult.data.map((r) => ({ id: r.id, name: r.name }))}
+        currentUserId={currentUser.id}
+      />
+    </div>
   );
 }

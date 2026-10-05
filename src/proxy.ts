@@ -12,7 +12,7 @@ const ROUTE_RULES: RouteRule[] = [
   { prefix: "/pengaturan/users", roles: ["Owner"] },
   { prefix: "/pengaturan", roles: ["Owner", "Admin"] },
   { prefix: "/produk", roles: ["Owner", "Admin"] },
-  { prefix: "/stok", roles: ["Owner", "Admin"] },
+  { prefix: "/stok", roles: ["Owner", "Admin", "Manajer"] },
   { prefix: "/laporan", roles: ["Owner", "Admin", "Manajer"] },
   { prefix: "/kasir", roles: ["Owner", "Admin", "Manajer", "Kasir"] },
 ];

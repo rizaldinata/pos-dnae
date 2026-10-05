@@ -5,7 +5,11 @@ import { createSupabaseAdminClient } from "@/shared/infrastructure/supabase/admi
 
 // Sales module dependencies
 import { SupabaseSaleRepository } from "@/modules/sales/infrastructure/supabase-sale.repository";
-import { CheckoutUseCase } from "@/modules/sales/application/use-cases/checkout.use-case";
+import {
+  CheckoutUseCase,
+  GetSaleReceiptUseCase,
+} from "@/modules/sales/application/use-cases/checkout.use-case";
+import { SearchProductsForPOSUseCase } from "@/modules/sales/application/use-cases/search-products-pos.use-case";
 
 // IAM module dependencies
 import { SupabaseUserRepository } from "@/modules/iam/infrastructure/supabase-user.repository";
@@ -50,9 +54,46 @@ import {
   UpdateUnitUseCase,
 } from "@/modules/catalog/application/use-cases/master-data.use-cases";
 
+// Inventory module dependencies
+import {
+  SupabaseStockRepository,
+  SupabaseStockMovementRepository,
+} from "@/modules/inventory/infrastructure/supabase-stock.repository";
+import {
+  GetStockCardUseCase,
+  GetStockUseCase,
+  ListStockOverviewUseCase,
+  RecordStockMovementUseCase,
+} from "@/modules/inventory/application/use-cases/stock.use-cases";
+
+// Settings module dependencies
+import { SupabasePaymentMethodRepository } from "@/modules/settings/infrastructure/supabase-payment-method.repository";
+import { SupabaseSettingsRepository } from "@/modules/settings/infrastructure/supabase-settings.repository";
+import {
+  ListActivePaymentMethodsUseCase,
+  ListPaymentMethodsUseCase,
+} from "@/modules/settings/application/use-cases/list-active-payment-methods.use-case";
+import {
+  GetStoreSettingsUseCase,
+  UpdateStoreSettingsUseCase,
+} from "@/modules/settings/application/use-cases/store-settings.use-cases";
+import {
+  CreatePaymentMethodUseCase,
+  UpdatePaymentMethodUseCase,
+} from "@/modules/settings/application/use-cases/payment-method.use-cases";
+
+// Reporting module dependencies
+import { SupabaseSalesReportRepository } from "@/modules/reporting/infrastructure/supabase-sales-report.repository";
+import {
+  GetSalesReportUseCase,
+  GetRecentTransactionsUseCase,
+} from "@/modules/reporting/application/use-cases/get-sales-report.use-case";
+
 export interface AppContainer {
   sales: {
     checkout: CheckoutUseCase;
+    getSaleReceipt: GetSaleReceiptUseCase;
+    searchProductsForPOS: SearchProductsForPOSUseCase;
   };
   iam: {
     login: LoginUseCase;
@@ -82,6 +123,24 @@ export interface AppContainer {
     updateUnit: UpdateUnitUseCase;
     deleteUnit: DeleteUnitUseCase;
   };
+  inventory: {
+    getStock: GetStockUseCase;
+    listStockOverview: ListStockOverviewUseCase;
+    getStockCard: GetStockCardUseCase;
+    recordStockMovement: RecordStockMovementUseCase;
+  };
+  settings: {
+    listActivePaymentMethods: ListActivePaymentMethodsUseCase;
+    listPaymentMethods: ListPaymentMethodsUseCase;
+    getStoreSettings: GetStoreSettingsUseCase;
+    updateStoreSettings: UpdateStoreSettingsUseCase;
+    createPaymentMethod: CreatePaymentMethodUseCase;
+    updatePaymentMethod: UpdatePaymentMethodUseCase;
+  };
+  reporting: {
+    getSalesReport: GetSalesReportUseCase;
+    getRecentTransactions: GetRecentTransactionsUseCase;
+  };
 }
 
 /**
@@ -98,16 +157,28 @@ export function createContainer(
   const authService = new SupabaseAuthService(supabase);
 
   // 2. Use Cases
-  const checkoutUseCase = new CheckoutUseCase(saleRepository);
-
   const productRepository = new SupabaseProductRepository(supabase);
   const categoryRepository = new SupabaseCategoryRepository(supabase);
   const brandRepository = new SupabaseBrandRepository(supabase);
   const unitRepository = new SupabaseUnitRepository(supabase);
+  const stockRepository = new SupabaseStockRepository(supabase);
+  const stockMovementRepository = new SupabaseStockMovementRepository(
+    supabase,
+    stockRepository
+  );
+  const paymentMethodRepository = new SupabasePaymentMethodRepository(supabase);
+  const settingsRepository = new SupabaseSettingsRepository(supabase);
+  const salesReportRepository = new SupabaseSalesReportRepository(supabase);
 
   return {
     sales: {
-      checkout: checkoutUseCase,
+      checkout: new CheckoutUseCase(
+        saleRepository,
+        productRepository,
+        stockRepository
+      ),
+      getSaleReceipt: new GetSaleReceiptUseCase(saleRepository),
+      searchProductsForPOS: new SearchProductsForPOSUseCase(productRepository),
     },
     iam: {
       login: new LoginUseCase(userRepository, authService),
@@ -136,6 +207,40 @@ export function createContainer(
       createUnit: new CreateUnitUseCase(unitRepository),
       updateUnit: new UpdateUnitUseCase(unitRepository),
       deleteUnit: new DeleteUnitUseCase(unitRepository),
+    },
+    inventory: {
+      getStock: new GetStockUseCase(stockRepository),
+      listStockOverview: new ListStockOverviewUseCase(stockRepository),
+      getStockCard: new GetStockCardUseCase(
+        stockRepository,
+        stockMovementRepository
+      ),
+      recordStockMovement: new RecordStockMovementUseCase(
+        stockRepository,
+        stockMovementRepository
+      ),
+    },
+    settings: {
+      listActivePaymentMethods: new ListActivePaymentMethodsUseCase(
+        paymentMethodRepository
+      ),
+      listPaymentMethods: new ListPaymentMethodsUseCase(
+        paymentMethodRepository
+      ),
+      getStoreSettings: new GetStoreSettingsUseCase(settingsRepository),
+      updateStoreSettings: new UpdateStoreSettingsUseCase(settingsRepository),
+      createPaymentMethod: new CreatePaymentMethodUseCase(
+        paymentMethodRepository
+      ),
+      updatePaymentMethod: new UpdatePaymentMethodUseCase(
+        paymentMethodRepository
+      ),
+    },
+    reporting: {
+      getSalesReport: new GetSalesReportUseCase(salesReportRepository),
+      getRecentTransactions: new GetRecentTransactionsUseCase(
+        salesReportRepository
+      ),
     },
   };
 }

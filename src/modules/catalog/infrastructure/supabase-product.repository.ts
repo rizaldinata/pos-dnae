@@ -6,6 +6,7 @@ import type {
   ProductFilter,
   ProductListResult,
   UpdateProductRecord,
+  VariantWithProduct,
 } from "@/modules/catalog/domain/repositories/product.repository";
 import {
   Product,
@@ -127,6 +128,30 @@ export class SupabaseProductRepository implements IProductRepository {
       return ok(null);
     }
     return ok(mapProductRow(data as unknown as ProductRow));
+  }
+
+  public async findVariantById(
+    variantId: string
+  ): Promise<Result<VariantWithProduct | null, DomainError>> {
+    const { data, error } = await this.client
+      .from("product_variants")
+      .select(
+        `${VARIANT_WITH_PRODUCT_SELECT}, products!inner ( name, deleted_at )`
+      )
+      .eq("id", variantId)
+      .is("products.deleted_at", null)
+      .maybeSingle();
+
+    if (error) {
+      return err(
+        new InvariantViolationError(`Database error: ${error.message}`)
+      );
+    }
+    if (data === null) {
+      return ok(null);
+    }
+    const row = data as unknown as VariantRow & { products: { name: string } };
+    return ok({ variant: mapVariantRow(row), productName: row.products.name });
   }
 
   public async findBySku(

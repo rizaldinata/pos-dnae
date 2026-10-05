@@ -45,6 +45,7 @@ function setup(store: { products: Product[] }) {
       return ok(null);
     },
     findByBarcode: async () => ok(null),
+    findVariantById: async () => ok(null),
     search: async () => ok({ items: [], total: 0, page: 1, pageSize: 20 }),
     create: async (record) => {
       const id = `p-${store.products.length + 1}`;

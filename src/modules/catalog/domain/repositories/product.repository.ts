@@ -5,6 +5,11 @@ import type {
   ProductVariant,
 } from "@/modules/catalog/domain/entities/product";
 
+export interface VariantWithProduct {
+  variant: ProductVariant;
+  productName: string;
+}
+
 export interface VariantInput {
   id?: string;
   sku: string;
@@ -56,6 +61,9 @@ export interface ProductListResult {
 
 export interface IProductRepository {
   findById(id: string): Promise<Result<Product | null, DomainError>>;
+  findVariantById(
+    variantId: string
+  ): Promise<Result<VariantWithProduct | null, DomainError>>;
   findBySku(sku: string): Promise<Result<ProductVariant | null, DomainError>>;
   findByBarcode(
     barcode: string

@@ -119,11 +119,25 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "bundle_items_bundle_variant_id_fkey";
+            columns: ["bundle_variant_id"];
+            isOneToOne: false;
+            referencedRelation: "stock_overview";
+            referencedColumns: ["variant_id"];
+          },
+          {
             foreignKeyName: "bundle_items_component_variant_id_fkey";
             columns: ["component_variant_id"];
             isOneToOne: false;
             referencedRelation: "product_variants";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "bundle_items_component_variant_id_fkey";
+            columns: ["component_variant_id"];
+            isOneToOne: false;
+            referencedRelation: "stock_overview";
+            referencedColumns: ["variant_id"];
           },
         ];
       };
@@ -343,6 +357,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "product_variants";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "price_tiers_variant_id_fkey";
+            columns: ["variant_id"];
+            isOneToOne: false;
+            referencedRelation: "stock_overview";
+            referencedColumns: ["variant_id"];
           },
         ];
       };
@@ -615,6 +636,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "product_variants";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "sale_items_variant_id_fkey";
+            columns: ["variant_id"];
+            isOneToOne: false;
+            referencedRelation: "stock_overview";
+            referencedColumns: ["variant_id"];
           },
         ];
       };
@@ -924,6 +952,13 @@ export type Database = {
             referencedRelation: "product_variants";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "stock_batches_variant_id_fkey";
+            columns: ["variant_id"];
+            isOneToOne: false;
+            referencedRelation: "stock_overview";
+            referencedColumns: ["variant_id"];
+          },
         ];
       };
       stock_movements: {
@@ -981,6 +1016,13 @@ export type Database = {
             referencedRelation: "product_variants";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "stock_movements_variant_id_fkey";
+            columns: ["variant_id"];
+            isOneToOne: false;
+            referencedRelation: "stock_overview";
+            referencedColumns: ["variant_id"];
+          },
         ];
       };
       stock_opname_items: {
@@ -1025,6 +1067,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "product_variants";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "stock_opname_items_variant_id_fkey";
+            columns: ["variant_id"];
+            isOneToOne: false;
+            referencedRelation: "stock_overview";
+            referencedColumns: ["variant_id"];
           },
         ];
       };
@@ -1082,6 +1131,13 @@ export type Database = {
             referencedRelation: "product_variants";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "stocks_variant_id_fkey";
+            columns: ["variant_id"];
+            isOneToOne: true;
+            referencedRelation: "stock_overview";
+            referencedColumns: ["variant_id"];
+          },
         ];
       };
       units: {
@@ -1113,17 +1169,87 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never;
+      stock_overview: {
+        Row: {
+          barcode: string | null;
+          category_id: string | null;
+          category_name: string | null;
+          min_stock: number | null;
+          product_id: string | null;
+          product_name: string | null;
+          qty: number | null;
+          sku: string | null;
+          status: string | null;
+          track_stock: boolean | null;
+          variant_id: string | null;
+          variant_name: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "product_variants_product_id_fkey";
+            columns: ["product_id"];
+            isOneToOne: false;
+            referencedRelation: "products";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "products_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Functions: {
+      build_sale_receipt: { Args: { p_sale_id: string }; Returns: Json };
+      create_sale: { Args: { p_payload: Json }; Returns: Json };
+      daily_sales_summary: {
+        Args: { p_date: string };
+        Returns: {
+          discount_total: number;
+          gross_sales: number;
+          items_sold: number;
+          net_sales: number;
+          transactions: number;
+        }[];
+      };
       has_permission: { Args: { p_code: string }; Returns: boolean };
+      monthly_sales_summary: {
+        Args: { p_month: number; p_year: number };
+        Returns: Database["public"]["CompositeTypes"]["sales_day_summary"][];
+        SetofOptions: {
+          from: "*";
+          to: "sales_day_summary";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       next_number: { Args: { p_name: string }; Returns: number };
+      sales_by_date_range: {
+        Args: { p_from: string; p_to: string };
+        Returns: Database["public"]["CompositeTypes"]["sales_day_summary"][];
+        SetofOptions: {
+          from: "*";
+          to: "sales_day_summary";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
     };
     Enums: {
       [_ in never]: never;
     };
     CompositeTypes: {
-      [_ in never]: never;
+      sales_day_summary: {
+        day: string | null;
+        transactions: number | null;
+        gross_sales: number | null;
+        discount_total: number | null;
+        net_sales: number | null;
+        items_sold: number | null;
+      };
     };
   };
 };

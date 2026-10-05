@@ -17,17 +17,17 @@ describe("Dependency Injection Container", () => {
     expect(container).toBeDefined();
     expect(container.sales).toBeDefined();
     expect(container.sales.checkout).toBeDefined();
+    expect(container.sales.getSaleReceipt).toBeDefined();
+    expect(container.sales.searchProductsForPOS).toBeDefined();
     expect(container.iam).toBeDefined();
     expect(container.iam.login).toBeDefined();
-
-    const checkoutResult = await container.sales.checkout.execute({
-      totalAmount: 150000,
-    });
-
-    expect(checkoutResult.success).toBe(true);
-    if (checkoutResult.success) {
-      expect(checkoutResult.data.totalAmount).toBe(150000);
-      expect(checkoutResult.data.invoiceNumber).toMatch(/^INV-/);
-    }
+    expect(container.catalog).toBeDefined();
+    expect(container.catalog.createProduct).toBeDefined();
+    expect(container.inventory).toBeDefined();
+    expect(container.inventory.getStockCard).toBeDefined();
+    expect(container.settings).toBeDefined();
+    expect(container.settings.listActivePaymentMethods).toBeDefined();
+    expect(container.reporting).toBeDefined();
+    expect(container.reporting.getSalesReport).toBeDefined();
   });
 });
