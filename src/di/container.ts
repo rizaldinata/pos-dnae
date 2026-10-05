@@ -18,6 +18,38 @@ import { ListRolesUseCase } from "@/modules/iam/application/use-cases/list-roles
 import { CreateUserUseCase } from "@/modules/iam/application/use-cases/create-user.use-case";
 import { UpdateUserUseCase } from "@/modules/iam/application/use-cases/update-user.use-case";
 
+// Catalog module dependencies
+import { SupabaseProductRepository } from "@/modules/catalog/infrastructure/supabase-product.repository";
+import {
+  SupabaseBrandRepository,
+  SupabaseCategoryRepository,
+  SupabaseUnitRepository,
+} from "@/modules/catalog/infrastructure/supabase-master-data.repository";
+import { CreateProductUseCase } from "@/modules/catalog/application/use-cases/create-product.use-case";
+import {
+  DeleteProductUseCase,
+  GetProductUseCase,
+  ListProductsUseCase,
+  SearchProductsUseCase,
+  UpdateProductUseCase,
+} from "@/modules/catalog/application/use-cases/product.use-cases";
+import {
+  CreateCategoryUseCase,
+  DeleteCategoryUseCase,
+  ListCategoriesUseCase,
+  UpdateCategoryUseCase,
+} from "@/modules/catalog/application/use-cases/category.use-cases";
+import {
+  CreateBrandUseCase,
+  CreateUnitUseCase,
+  DeleteBrandUseCase,
+  DeleteUnitUseCase,
+  ListBrandsUseCase,
+  ListUnitsUseCase,
+  UpdateBrandUseCase,
+  UpdateUnitUseCase,
+} from "@/modules/catalog/application/use-cases/master-data.use-cases";
+
 export interface AppContainer {
   sales: {
     checkout: CheckoutUseCase;
@@ -29,6 +61,26 @@ export interface AppContainer {
     listRoles: ListRolesUseCase;
     createUser: CreateUserUseCase;
     updateUser: UpdateUserUseCase;
+  };
+  catalog: {
+    createProduct: CreateProductUseCase;
+    updateProduct: UpdateProductUseCase;
+    deleteProduct: DeleteProductUseCase;
+    getProduct: GetProductUseCase;
+    listProducts: ListProductsUseCase;
+    searchProducts: SearchProductsUseCase;
+    listCategories: ListCategoriesUseCase;
+    createCategory: CreateCategoryUseCase;
+    updateCategory: UpdateCategoryUseCase;
+    deleteCategory: DeleteCategoryUseCase;
+    listBrands: ListBrandsUseCase;
+    createBrand: CreateBrandUseCase;
+    updateBrand: UpdateBrandUseCase;
+    deleteBrand: DeleteBrandUseCase;
+    listUnits: ListUnitsUseCase;
+    createUnit: CreateUnitUseCase;
+    updateUnit: UpdateUnitUseCase;
+    deleteUnit: DeleteUnitUseCase;
   };
 }
 
@@ -48,6 +100,11 @@ export function createContainer(
   // 2. Use Cases
   const checkoutUseCase = new CheckoutUseCase(saleRepository);
 
+  const productRepository = new SupabaseProductRepository(supabase);
+  const categoryRepository = new SupabaseCategoryRepository(supabase);
+  const brandRepository = new SupabaseBrandRepository(supabase);
+  const unitRepository = new SupabaseUnitRepository(supabase);
+
   return {
     sales: {
       checkout: checkoutUseCase,
@@ -59,6 +116,26 @@ export function createContainer(
       listRoles: new ListRolesUseCase(roleRepository),
       createUser: new CreateUserUseCase(userRepository, roleRepository),
       updateUser: new UpdateUserUseCase(userRepository, roleRepository),
+    },
+    catalog: {
+      createProduct: new CreateProductUseCase(productRepository),
+      updateProduct: new UpdateProductUseCase(productRepository),
+      deleteProduct: new DeleteProductUseCase(productRepository),
+      getProduct: new GetProductUseCase(productRepository),
+      listProducts: new ListProductsUseCase(productRepository),
+      searchProducts: new SearchProductsUseCase(productRepository),
+      listCategories: new ListCategoriesUseCase(categoryRepository),
+      createCategory: new CreateCategoryUseCase(categoryRepository),
+      updateCategory: new UpdateCategoryUseCase(categoryRepository),
+      deleteCategory: new DeleteCategoryUseCase(categoryRepository),
+      listBrands: new ListBrandsUseCase(brandRepository),
+      createBrand: new CreateBrandUseCase(brandRepository),
+      updateBrand: new UpdateBrandUseCase(brandRepository),
+      deleteBrand: new DeleteBrandUseCase(brandRepository),
+      listUnits: new ListUnitsUseCase(unitRepository),
+      createUnit: new CreateUnitUseCase(unitRepository),
+      updateUnit: new UpdateUnitUseCase(unitRepository),
+      deleteUnit: new DeleteUnitUseCase(unitRepository),
     },
   };
 }

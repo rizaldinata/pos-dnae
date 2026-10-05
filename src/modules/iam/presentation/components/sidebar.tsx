@@ -46,7 +46,7 @@ const MENU_ITEMS: MenuItem[] = [
     label: "Produk",
     icon: Package,
     requiredPermissions: ["product.manage"],
-    available: false,
+    available: true,
   },
   {
     href: "/stok",
