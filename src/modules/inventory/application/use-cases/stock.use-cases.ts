@@ -92,12 +92,22 @@ export class GetStockCardUseCase {
         )
       );
     }
-    return this.movements.findByVariantId({
+    const result = await this.movements.findByVariantId({
       variantId: parsed.data.variantId,
       type: parsed.data.type,
       page: parsed.data.page,
       pageSize: parsed.data.pageSize,
     });
+    if (isErr(result)) {
+      return err(result.error);
+    }
+    const batches = await this.stocks.listBatchesByVariant(
+      parsed.data.variantId
+    );
+    if (isErr(batches)) {
+      return err(batches.error);
+    }
+    return ok({ ...result.data, batches: batches.data });
   }
 }
 

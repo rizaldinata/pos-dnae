@@ -50,6 +50,7 @@ const ProductBaseSchema = z.object({
   description: z.string().trim().max(2000).optional().default(""),
   imageUrl: z.string().trim().max(500).nullish(),
   isActive: z.boolean().optional().default(true),
+  isBundle: z.boolean().optional().default(false),
 });
 
 export const CreateProductSchema = ProductBaseSchema.extend({

@@ -6,6 +6,15 @@ import type {
   MonthQuery,
   RecentTransaction,
 } from "@/modules/reporting/domain/repositories/sales-report.repository";
+import type {
+  CashierSalesRow,
+  CategorySalesRow,
+  PaymentMethodSalesRow,
+  ProductSalesRow,
+  StockValuationRow,
+  TopProduct,
+} from "@/modules/reporting/domain/entities/operational-report";
+import { withShare } from "@/modules/reporting/domain/entities/operational-report";
 import type { SalesDaySummary } from "@/modules/reporting/domain/entities/sales-summary";
 import { err, ok, type Result } from "@/shared/kernel/result";
 import {
@@ -129,5 +138,208 @@ export class SupabaseSalesReportRepository implements ISalesReportRepository {
       status: row.status,
     }));
     return ok(rows);
+  }
+
+  public async getTopProducts(
+    from: string,
+    to: string,
+    limit: number
+  ): Promise<Result<TopProduct[], DomainError>> {
+    const { data, error } = await this.client.rpc("top_products", {
+      p_from: from,
+      p_to: to,
+      p_limit: Math.min(Math.max(limit, 1), 50),
+    });
+    if (error) {
+      return err(
+        new InvariantViolationError(`Database error: ${error.message}`)
+      );
+    }
+    const rows = (
+      (data ?? []) as unknown as {
+        product_id: string;
+        product_name: string;
+        qty_sold: number | string;
+        revenue: number | string;
+      }[]
+    ).map((row) => ({
+      productId: row.product_id,
+      productName: row.product_name,
+      qtySold: Number(row.qty_sold),
+      revenue: Math.round(Number(row.revenue)),
+    }));
+    return ok(rows);
+  }
+
+  public async getProductSales(
+    from: string,
+    to: string,
+    categoryId?: string | null
+  ): Promise<Result<ProductSalesRow[], DomainError>> {
+    const { data, error } = await this.client.rpc("sales_by_product", {
+      p_from: from,
+      p_to: to,
+      p_category_id: categoryId ?? undefined,
+    });
+    if (error) {
+      return err(
+        new InvariantViolationError(`Database error: ${error.message}`)
+      );
+    }
+    const rows = (
+      (data ?? []) as unknown as {
+        product_id: string | null;
+        product_name: string | null;
+        variant_id: string | null;
+        variant_name: string | null;
+        sku: string | null;
+        qty_sold: number | string;
+        revenue: number | string;
+        avg_price: number | string;
+      }[]
+    ).map((row) => ({
+      productId: row.product_id,
+      productName: row.product_name ?? "-",
+      variantId: row.variant_id,
+      variantName: row.variant_name ?? "",
+      sku: row.sku ?? "",
+      qtySold: Number(row.qty_sold),
+      revenue: Math.round(Number(row.revenue)),
+      avgPrice: Math.round(Number(row.avg_price)),
+    }));
+    return ok(rows);
+  }
+
+  public async getCategorySales(
+    from: string,
+    to: string
+  ): Promise<Result<CategorySalesRow[], DomainError>> {
+    const { data, error } = await this.client.rpc("sales_by_category", {
+      p_from: from,
+      p_to: to,
+    });
+    if (error) {
+      return err(
+        new InvariantViolationError(`Database error: ${error.message}`)
+      );
+    }
+    const rows = (
+      (data ?? []) as unknown as {
+        category_id: string | null;
+        category_name: string;
+        qty_sold: number | string;
+        revenue: number | string;
+      }[]
+    ).map((row) => ({
+      categoryId: row.category_id,
+      categoryName: row.category_name,
+      qtySold: Number(row.qty_sold),
+      revenue: Math.round(Number(row.revenue)),
+      sharePercent: 0,
+    }));
+    return ok(withShare(rows));
+  }
+
+  public async getCashierSales(
+    from: string,
+    to: string
+  ): Promise<Result<CashierSalesRow[], DomainError>> {
+    const { data, error } = await this.client.rpc("sales_by_cashier", {
+      p_from: from,
+      p_to: to,
+    });
+    if (error) {
+      return err(
+        new InvariantViolationError(`Database error: ${error.message}`)
+      );
+    }
+    const rows = (
+      (data ?? []) as unknown as {
+        user_id: string;
+        cashier_name: string;
+        transactions: number | string;
+        revenue: number | string;
+        avg_per_transaction: number | string;
+      }[]
+    ).map((row) => ({
+      userId: row.user_id,
+      cashierName: row.cashier_name,
+      transactions: Number(row.transactions),
+      revenue: Math.round(Number(row.revenue)),
+      avgPerTransaction: Math.round(Number(row.avg_per_transaction)),
+    }));
+    return ok(rows);
+  }
+
+  public async getPaymentMethodSales(
+    from: string,
+    to: string
+  ): Promise<Result<PaymentMethodSalesRow[], DomainError>> {
+    const { data, error } = await this.client.rpc("sales_by_payment_method", {
+      p_from: from,
+      p_to: to,
+    });
+    if (error) {
+      return err(
+        new InvariantViolationError(`Database error: ${error.message}`)
+      );
+    }
+    const rows = (
+      (data ?? []) as unknown as {
+        method_name: string;
+        method_type: string;
+        transactions: number | string;
+        total: number | string;
+      }[]
+    ).map((row) => ({
+      methodName: row.method_name,
+      methodType: row.method_type,
+      transactions: Number(row.transactions),
+      total: Math.round(Number(row.total)),
+      sharePercent: 0,
+    }));
+    return ok(
+      withShare(rows.map((r) => ({ ...r, revenue: r.total }))).map((r) => ({
+        methodName: r.methodName,
+        methodType: r.methodType,
+        transactions: r.transactions,
+        total: r.total,
+        sharePercent: r.sharePercent,
+      }))
+    );
+  }
+
+  public async getStockValuation(): Promise<
+    Result<{ rows: StockValuationRow[]; totalValue: number }, DomainError>
+  > {
+    const { data, error } = await this.client.rpc("stock_valuation");
+    if (error) {
+      return err(
+        new InvariantViolationError(`Database error: ${error.message}`)
+      );
+    }
+    const rows = (
+      (data ?? []) as unknown as {
+        variant_id: string;
+        product_name: string;
+        variant_name: string;
+        sku: string;
+        qty: number | string;
+        cost_price: number | string;
+        stock_value: number | string;
+      }[]
+    ).map((row) => ({
+      variantId: row.variant_id,
+      productName: row.product_name,
+      variantName: row.variant_name ?? "",
+      sku: row.sku,
+      qty: Number(row.qty),
+      costPrice: Math.round(Number(row.cost_price)),
+      stockValue: Math.round(Number(row.stock_value)),
+    }));
+    return ok({
+      rows,
+      totalValue: rows.reduce((sum, r) => sum + r.stockValue, 0),
+    });
   }
 }

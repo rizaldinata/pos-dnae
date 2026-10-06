@@ -55,6 +55,7 @@ export default async function TransactionDetailPage({
   const receipt = {
     saleId: sale.id,
     invoiceNo: sale.invoiceNo,
+    status: sale.status,
     createdAt: sale.createdAt.toISOString(),
     cashierName: viewer.fullName,
     subtotal: sale.subtotal.amount,

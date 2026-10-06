@@ -43,6 +43,12 @@ describe("GetSalesReportUseCase", () => {
       getByDateRange: async () => ok(days),
       getMonthly: async () => ok(days),
       getRecentTransactions: async () => ok([]),
+      getTopProducts: async () => ok([]),
+      getProductSales: async () => ok([]),
+      getCategorySales: async () => ok([]),
+      getCashierSales: async () => ok([]),
+      getPaymentMethodSales: async () => ok([]),
+      getStockValuation: async () => ok({ rows: [], totalValue: 0 }),
     };
     return new GetSalesReportUseCase(repo);
   }

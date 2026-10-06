@@ -6,6 +6,12 @@ export interface SessionIdentity {
   email: string;
 }
 
+export interface PinUserSummary {
+  id: string;
+  fullName: string;
+  roleName: string;
+}
+
 export interface IAuthService {
   signIn(
     email: string,
@@ -13,4 +19,9 @@ export interface IAuthService {
   ): Promise<Result<SessionIdentity, DomainError>>;
   signOut(): Promise<Result<void, DomainError>>;
   getCurrentIdentity(): Promise<Result<SessionIdentity | null, DomainError>>;
+  signInWithPin(
+    userId: string,
+    pin: string
+  ): Promise<Result<SessionIdentity, DomainError>>;
+  listPinUsers(): Promise<Result<PinUserSummary[], DomainError>>;
 }

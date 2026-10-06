@@ -15,6 +15,7 @@ import {
 } from "@/shared/ui/table";
 import { formatRupiah } from "@/shared/lib/format-rupiah";
 import { formatDateTimeJakarta } from "@/shared/lib/date";
+import { ExportButtons } from "@/modules/reporting/presentation/components/export-buttons";
 
 export const dynamic = "force-dynamic";
 
@@ -78,6 +79,7 @@ export default async function ShiftRecapPage({
           >
             <Link href="/laporan/shift?status=closed">Tertutup</Link>
           </Button>
+          <ExportButtons type="shift" />
         </div>
       </div>
 

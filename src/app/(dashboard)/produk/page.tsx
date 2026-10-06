@@ -15,6 +15,7 @@ import {
 } from "@/shared/ui/table";
 import { ProductSearch } from "@/modules/catalog/presentation/components/product-search";
 import { ProductFilters } from "@/modules/catalog/presentation/components/product-filters";
+import { ExportButtons } from "@/modules/reporting/presentation/components/export-buttons";
 import { formatRupiah } from "@/shared/lib/format-rupiah";
 
 export const dynamic = "force-dynamic";
@@ -105,13 +106,29 @@ export default async function ProductsPage({
             {total} produk{query ? ` untuk "${query}"` : ""}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" asChild className="min-h-11">
             <Link href="/produk/kategori">Kategori</Link>
+          </Button>
+          <Button variant="outline" asChild className="min-h-11">
+            <Link href="/produk/impor">Impor</Link>
+          </Button>
+          <Button variant="outline" asChild className="min-h-11">
+            <Link href="/produk/label">Cetak Label</Link>
           </Button>
           <Button asChild className="min-h-11">
             <Link href="/produk/baru">Tambah produk</Link>
           </Button>
+          <ExportButtons
+            type="produk"
+            csv
+            query={{
+              q: query || undefined,
+              categoryId: categoryId || undefined,
+              brandId: brandId || undefined,
+              status: status || undefined,
+            }}
+          />
         </div>
       </div>
 
@@ -133,6 +150,7 @@ export default async function ProductsPage({
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Foto</TableHead>
               <TableHead>Nama</TableHead>
               <TableHead>SKU</TableHead>
               <TableHead>Kategori</TableHead>
@@ -151,6 +169,18 @@ export default async function ProductsPage({
               const lowStock = product.variants.some((v) => v.isLowStock());
               return (
                 <TableRow key={product.id}>
+                  <TableCell>
+                    {product.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className="h-10 w-10 rounded-md border object-cover"
+                      />
+                    ) : (
+                      <span className="text-xs text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
                   <TableCell className="font-medium">
                     <Link
                       href={`/produk/${product.id}`}
@@ -189,7 +219,7 @@ export default async function ProductsPage({
             {items.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={7}
                   className="text-center text-muted-foreground"
                 >
                   Tidak ada produk ditemukan

@@ -13,6 +13,7 @@ import {
 import { formatRupiah } from "@/shared/lib/format-rupiah";
 import { formatDateTimeJakarta } from "@/shared/lib/date";
 import { listReturnsAction } from "@/modules/sales/presentation/actions/void-return.action";
+import { ExportButtons } from "@/modules/reporting/presentation/components/export-buttons";
 
 export const dynamic = "force-dynamic";
 
@@ -40,9 +41,14 @@ export default async function ReturnHistoryPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-semibold">Riwayat Retur</h1>
-        <p className="text-sm text-muted-foreground">{total} retur tercatat</p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h1 className="text-2xl font-semibold">Riwayat Retur</h1>
+          <p className="text-sm text-muted-foreground">
+            {total} retur tercatat
+          </p>
+        </div>
+        <ExportButtons type="retur" />
       </div>
 
       <div className="rounded-md border">

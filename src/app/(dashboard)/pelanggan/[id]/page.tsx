@@ -16,6 +16,7 @@ import {
 } from "@/shared/ui/table";
 import { formatRupiah } from "@/shared/lib/format-rupiah";
 import { formatDateTimeJakarta } from "@/shared/lib/date";
+import { LoyaltyHistory } from "@/modules/customers/presentation/components/loyalty-history";
 
 export const dynamic = "force-dynamic";
 
@@ -35,9 +36,10 @@ export default async function CustomerDetailPage({
 
   const { id } = await params;
   const container = await getAppContainer();
-  const [customerResult, historyResult] = await Promise.all([
+  const [customerResult, historyResult, loyaltyResult] = await Promise.all([
     container.customers.getCustomer.execute(id),
     container.customers.getCustomerHistory.execute(id),
+    container.customers.getLoyaltyHistory.execute(id, 50),
   ]);
 
   if (isErr(customerResult)) {
@@ -48,6 +50,9 @@ export default async function CustomerDetailPage({
   }
   if (isErr(historyResult)) {
     throw new Error(historyResult.error.message);
+  }
+  if (isErr(loyaltyResult)) {
+    throw new Error(loyaltyResult.error.message);
   }
 
   const customer = customerResult.data;
@@ -186,6 +191,26 @@ export default async function CustomerDetailPage({
               </TableBody>
             </Table>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Riwayat poin</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <LoyaltyHistory
+            customerId={customer.id}
+            customerName={customer.name}
+            balance={customer.points}
+            items={loyaltyResult.data.map((t) => ({
+              id: t.id,
+              points: t.points,
+              type: t.type,
+              note: t.note,
+              createdAt: t.createdAt.toISOString(),
+            }))}
+          />
         </CardContent>
       </Card>
     </div>

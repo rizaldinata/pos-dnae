@@ -24,4 +24,27 @@ export interface IUserRepository {
     id: string,
     patch: UpdateUserRecord
   ): Promise<Result<User, DomainError>>;
+  setPinHash(
+    id: string,
+    pinHash: string | null
+  ): Promise<Result<void, DomainError>>;
+  recordPinFailure(
+    id: string,
+    maxAttempts: number,
+    lockMinutes: number
+  ): Promise<
+    Result<{ attempts: number; lockedUntil: Date | null }, DomainError>
+  >;
+  resetPinAttempts(id: string): Promise<Result<void, DomainError>>;
+  getPinStatus(id: string): Promise<
+    Result<
+      {
+        pinSet: boolean;
+        attempts: number;
+        lockedUntil: Date | null;
+        isActive: boolean;
+      },
+      DomainError
+    >
+  >;
 }

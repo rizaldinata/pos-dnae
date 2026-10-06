@@ -6,6 +6,7 @@ export interface CheckoutItemInput {
   variantId: string;
   qty: number;
   discount?: number;
+  isGift?: boolean;
 }
 
 export interface CheckoutPaymentInput {
@@ -20,6 +21,11 @@ export interface CreateSaleRecord {
   shiftId?: string | null;
   customerId?: string | null;
   allowNegativeStock?: boolean;
+  isCredit?: boolean;
+  promotionIds?: string[];
+  voucherCode?: string | null;
+  /** Jumlah poin yang ditukar; diskon dihitung server dari settings loyalitas. */
+  redeemPoints?: number;
   items: CheckoutItemInput[];
   transactionDiscount?: number;
   taxTotal?: number;

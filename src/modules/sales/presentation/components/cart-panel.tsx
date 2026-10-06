@@ -13,6 +13,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { toast } from "@/shared/ui/toast";
 import { formatRupiah } from "@/shared/lib/format-rupiah";
 import { PaymentDialog } from "@/modules/sales/presentation/components/payment-dialog";
+import { VoucherField } from "@/modules/sales/presentation/components/voucher-field";
+import { RedeemField } from "@/modules/sales/presentation/components/redeem-field";
 import { Minus, Plus, Trash2 } from "lucide-react";
 
 function DiscountInput({
@@ -96,7 +98,16 @@ export function CartPanel() {
   const [payOpen, setPayOpen] = useState(false);
   const [paySession, setPaySession] = useState(0);
 
-  const { pricingTotals: totals, tax } = useCartTotals();
+  const {
+    pricingTotals: totals,
+    tax,
+    promoExtraByLine,
+    promoExtraTotal,
+    giftPreviews,
+    voucherDiscount,
+    redeemDiscount,
+    redeemPoints,
+  } = useCartTotals();
 
   function changeQty(variantId: string, qty: number) {
     const error = setQty(variantId, qty);
@@ -210,6 +221,14 @@ export function CartPanel() {
                       <p className="text-sm font-semibold">
                         {formatRupiah(net)}
                       </p>
+                      {(promoExtraByLine.get(item.variantId) ?? 0) > 0 && (
+                        <p className="text-xs text-green-600">
+                          Promo -
+                          {formatRupiah(
+                            promoExtraByLine.get(item.variantId) ?? 0
+                          )}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="mt-1">
@@ -230,10 +249,12 @@ export function CartPanel() {
             <span className="text-muted-foreground">Subtotal</span>
             <span>{formatRupiah(totals.subtotal)}</span>
           </div>
-          {totals.itemDiscountTotal > 0 && (
+          {totals.itemDiscountTotal - promoExtraTotal > 0 && (
             <div className="flex justify-between text-green-600">
               <span>Diskon item</span>
-              <span>-{formatRupiah(totals.itemDiscountTotal)}</span>
+              <span>
+                -{formatRupiah(totals.itemDiscountTotal - promoExtraTotal)}
+              </span>
             </div>
           )}
           <div className="flex items-center justify-between gap-2">
@@ -249,6 +270,51 @@ export function CartPanel() {
               </span>
             )}
           </div>
+          {promoExtraTotal > 0 && (
+            <div className="flex justify-between text-green-600">
+              <span>Diskon promo</span>
+              <span>-{formatRupiah(promoExtraTotal)}</span>
+            </div>
+          )}
+          {giftPreviews.length > 0 && (
+            <ul className="flex flex-col gap-1 text-green-600">
+              {giftPreviews.map((gift) => (
+                <li key={gift.variantId} className="flex justify-between">
+                  <span className="truncate">
+                    Gratis: {gift.displayName} × {gift.qty}
+                  </span>
+                  <span>{formatRupiah(0)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-muted-foreground">Voucher</span>
+            <VoucherField
+              baseAmount={Math.max(
+                totals.subtotal -
+                  totals.itemDiscountTotal -
+                  totals.transactionDiscountTotal,
+                0
+              )}
+            />
+          </div>
+          {voucherDiscount > 0 && (
+            <div className="flex justify-between text-green-600">
+              <span>Diskon voucher</span>
+              <span>-{formatRupiah(voucherDiscount)}</span>
+            </div>
+          )}
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-muted-foreground">Tukar poin</span>
+            <RedeemField />
+          </div>
+          {redeemDiscount > 0 && (
+            <div className="flex justify-between text-green-600">
+              <span>Tukar {redeemPoints} poin</span>
+              <span>-{formatRupiah(redeemDiscount)}</span>
+            </div>
+          )}
           {tax.taxTotal > 0 && (
             <div className="flex justify-between">
               <span className="text-muted-foreground">Pajak</span>

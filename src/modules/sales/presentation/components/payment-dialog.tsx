@@ -8,6 +8,10 @@ import {
   type ReceiptDTO,
 } from "@/modules/sales/presentation/actions/checkout.action";
 import { getStoreSettingsAction } from "@/modules/settings/presentation/actions/settings.action";
+import {
+  getLoyaltyPreviewAction,
+  type LoyaltyPreviewDTO,
+} from "@/modules/customers/presentation/actions/loyalty.action";
 import type { StoreSettings } from "@/modules/settings/domain/entities/store-setting";
 import { useCartStore } from "@/modules/sales/presentation/hooks/use-cart-store";
 import { useCartTotals } from "@/modules/sales/presentation/hooks/use-cart-totals";
@@ -49,6 +53,8 @@ export function PaymentDialog({
   const selectedCustomer = useCartStore((s) => s.selectedCustomer);
   const items = useCartStore((s) => s.items);
   const transactionDiscount = useCartStore((s) => s.transactionDiscount);
+  const voucher = useCartStore((s) => s.voucher);
+  const redeem = useCartStore((s) => s.redeem);
   const clearCart = useCartStore((s) => s.clearCart);
   const { entities, pricingTotals, tax } = useCartTotals();
 
@@ -59,6 +65,8 @@ export function PaymentDialog({
     null
   );
   const [rows, setRows] = useState<PaymentRow[]>([]);
+  const [isCredit, setIsCredit] = useState(false);
+  const [loyalty, setLoyalty] = useState<LoyaltyPreviewDTO | null>(null);
   const [receipt, setReceipt] = useState<ReceiptDTO | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -92,6 +100,15 @@ export function PaymentDialog({
         }
       })
       .catch(() => {});
+    if (selectedCustomer) {
+      getLoyaltyPreviewAction(selectedCustomer.id, grandTotal)
+        .then((preview) => {
+          if (!cancelled) {
+            setLoyalty(preview);
+          }
+        })
+        .catch(() => {});
+    }
     return () => {
       cancelled = true;
     };
@@ -115,13 +132,17 @@ export function PaymentDialog({
   const remaining = grandTotal - paidTotal;
   const change = Math.max(paidTotal - grandTotal, 0);
   const hasCashRow = rows.some((r) => methodOf(r)?.isCash ?? true);
+  const creditBlocked = isCredit && !selectedCustomer;
   const canConfirm =
     !pending &&
     items.length > 0 &&
-    rows.length > 0 &&
-    rows.every((r) => r.methodId) &&
-    paidTotal >= grandTotal &&
-    grandTotal >= 0;
+    !creditBlocked &&
+    (isCredit
+      ? true
+      : rows.length > 0 &&
+        rows.every((r) => r.methodId) &&
+        paidTotal >= grandTotal &&
+        grandTotal >= 0);
 
   function setFirstRowAmount(amount: number) {
     setRows((prev) => {
@@ -153,6 +174,7 @@ export function PaymentDialog({
     startTransition(async () => {
       const result = await checkoutAction({
         idempotencyKey: idempotencyKey.current,
+        isCredit,
         customerId: selectedCustomer?.id ?? null,
         items: entities.map((item) => ({
           variantId: item.variantId,
@@ -162,6 +184,8 @@ export function PaymentDialog({
             : undefined,
         })),
         transactionDiscount: transactionDiscount ?? undefined,
+        voucherCode: voucher?.code ?? null,
+        redeemPoints: redeem?.points ?? 0,
         payments: rows.map((r) => ({
           paymentMethodId: r.methodId,
           amount: Math.round(Number(r.amount) || 0),
@@ -216,7 +240,46 @@ export function PaymentDialog({
                   ? ` • layanan ${formatRupiah(tax.serviceTotal)}`
                   : ""}
               </p>
+              {loyalty && (
+                <p className="text-xs text-green-700">
+                  {loyalty.earnRatio > 0
+                    ? `Poin ${loyalty.currentPoints} → +${loyalty.earnedPoints} setelah transaksi`
+                    : `Poin pelanggan: ${loyalty.currentPoints}`}
+                </p>
+              )}
             </div>
+
+            <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md border px-3 text-sm">
+              <input
+                type="checkbox"
+                checked={isCredit}
+                onChange={(e) => {
+                  const next = e.target.checked;
+                  setIsCredit(next);
+                  if (next) {
+                    setRows([]);
+                  } else if (rows.length === 0) {
+                    const cash = methods.find((m) => m.isCash);
+                    setRows([
+                      {
+                        key: newRowKey(),
+                        methodId: cash?.id ?? methods[0]?.id ?? "",
+                        amount: String(grandTotal),
+                        reference: "",
+                      },
+                    ]);
+                  }
+                }}
+                disabled={pending || !selectedCustomer}
+                className="size-4"
+              />
+              Penjualan kredit (piutang)
+              {!selectedCustomer && (
+                <span className="text-xs text-muted-foreground">
+                  — pilih pelanggan dulu
+                </span>
+              )}
+            </label>
 
             <div className="flex flex-col gap-2">
               {rows.map((row, index) => {
@@ -243,7 +306,7 @@ export function PaymentDialog({
                           </option>
                         ))}
                       </select>
-                      {rows.length > 1 && (
+                      {rows.length > 1 || isCredit ? (
                         <Button
                           type="button"
                           variant="ghost"
@@ -257,7 +320,7 @@ export function PaymentDialog({
                         >
                           Hapus
                         </Button>
-                      )}
+                      ) : null}
                     </div>
                     <div className="mt-2 flex gap-2">
                       <Input
@@ -294,8 +357,14 @@ export function PaymentDialog({
                 disabled={pending}
                 onClick={addRow}
               >
-                + Split payment
+                {isCredit ? "+ Tambah DP" : "+ Split payment"}
               </Button>
+              {isCredit && rows.length === 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Tanpa uang muka — seluruh tagihan menjadi piutang. Tambah
+                  baris untuk DP sebagian.
+                </p>
+              )}
               {hasCashRow && (
                 <div className="flex flex-wrap gap-2">
                   <Button

@@ -62,6 +62,8 @@ export interface StockMovementRow {
   note: string;
   created_by: string | null;
   created_at: string;
+  batch_id?: string | null;
+  stock_batches?: { batch_no: string; expiry_date: string | null } | null;
 }
 
 export function mapStockMovementRow(
@@ -81,6 +83,9 @@ export function mapStockMovementRow(
       refId: row.ref_id,
       note: row.note,
       createdBy: row.created_by,
+      batchId: row.batch_id ?? null,
+      batchNo: row.stock_batches?.batch_no ?? null,
+      batchExpiryDate: row.stock_batches?.expiry_date ?? null,
     },
     row.id,
     new Date(row.created_at)

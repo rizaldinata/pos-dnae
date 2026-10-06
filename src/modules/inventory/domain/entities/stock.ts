@@ -69,6 +69,12 @@ export interface StockMovementProps {
   refId: string | null;
   note: string;
   createdBy: string | null;
+  /** Batch terkait (Sub-PRD 4.1) — null bila pergerakan tidak terkait batch. */
+  batchId?: string | null;
+  /** No. batch untuk tampilan kartu stok (tampil bila batchId terisi). */
+  batchNo?: string | null;
+  /** Tanggal kedaluwarsa batch (YYYY-MM-DD) untuk tampilan. */
+  batchExpiryDate?: string | null;
 }
 
 export class StockMovement extends BaseEntity<StockMovementProps> {
@@ -114,5 +120,17 @@ export class StockMovement extends BaseEntity<StockMovementProps> {
 
   public get note(): string {
     return this._props.note;
+  }
+
+  public get batchId(): string | null {
+    return this._props.batchId ?? null;
+  }
+
+  public get batchNo(): string | null {
+    return this._props.batchNo ?? null;
+  }
+
+  public get batchExpiryDate(): string | null {
+    return this._props.batchExpiryDate ?? null;
   }
 }

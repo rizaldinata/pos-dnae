@@ -1,6 +1,5 @@
 import { LoginForm } from "@/modules/iam/presentation/components/login-form";
-
-export const dynamic = "force-dynamic";
+import { PinLoginSection } from "@/modules/iam/presentation/components/pin-login-section";
 
 export const metadata = {
   title: "Masuk — POS DNAE",
@@ -17,5 +16,10 @@ export default async function LoginPage({
       ? "Akun Anda sudah dinonaktifkan. Hubungi Owner."
       : undefined;
 
-  return <LoginForm notice={notice} />;
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <LoginForm notice={notice} />
+      <PinLoginSection />
+    </div>
+  );
 }

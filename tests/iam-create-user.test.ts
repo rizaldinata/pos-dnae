@@ -9,7 +9,7 @@ import {
   EmailAlreadyExistsError,
   CannotDeactivateSelfError,
 } from "@/modules/iam/domain/errors";
-import { NotFoundError } from "@/shared/kernel/errors";
+import { InvariantViolationError, NotFoundError } from "@/shared/kernel/errors";
 import { ok } from "@/shared/kernel/result";
 
 const KASIR_ROLE_ID = "20000000-0000-4000-8000-000000000001";
@@ -63,10 +63,24 @@ function setup(store: { users: User[] }) {
       store.users = store.users.map((u) => (u.id === id ? updated : u));
       return ok(updated);
     },
+    setPinHash: async () => ok(undefined),
+    recordPinFailure: async () => ok({ attempts: 0, lockedUntil: null }),
+    resetPinAttempts: async () => ok(undefined),
+    getPinStatus: async () =>
+      ok({ pinSet: false, attempts: 0, lockedUntil: null, isActive: true }),
   };
   const roleRepository: IRoleRepository = {
     findById: async (id) => ok(id === kasirRole.id ? kasirRole : null),
     findAll: async () => ok([kasirRole]),
+    findAllPermissions: async () => ok([]),
+    create: async () => {
+      throw new InvariantViolationError("not used");
+    },
+    update: async () => {
+      throw new InvariantViolationError("not used");
+    },
+    remove: async () => ok(undefined),
+    countUsersByRole: async () => ok(0),
   };
   return {
     createUseCase: new CreateUserUseCase(userRepository, roleRepository),

@@ -122,6 +122,7 @@ export class UpdateProductUseCase {
       description: parsed.data.description,
       imageUrl: parsed.data.imageUrl,
       isActive: parsed.data.isActive,
+      isBundle: parsed.data.isBundle,
       variants: parsed.data.variants?.map((v) => ({
         id: v.id,
         sku: v.sku,

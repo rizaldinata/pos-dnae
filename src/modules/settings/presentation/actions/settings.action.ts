@@ -160,3 +160,56 @@ export async function updatePricingSettingsAction(
   revalidatePath("/kasir");
   return { success: true, message: "Pengaturan pajak & layanan tersimpan" };
 }
+
+export async function updateLoyaltySettingsAction(
+  _prevState: SettingsActionState,
+  formData: FormData
+): Promise<SettingsActionState> {
+  const guard = await requirePermission("settings.manage");
+  if (!guard.ok) {
+    return { ...INITIAL, message: guard.message };
+  }
+  const container = await getAppContainer();
+  const result = await container.settings.updateLoyaltySettings.execute({
+    earnRatio: Number(formData.get("earnRatio") ?? 0),
+    pointValue: Number(formData.get("pointValue") ?? 0),
+  });
+  if (isErr(result)) {
+    return {
+      ...INITIAL,
+      message: result.error.message,
+      fieldErrors: toFieldErrors(result.error),
+    };
+  }
+  revalidatePath("/pengaturan/loyalitas");
+  revalidatePath("/kasir");
+  return { success: true, message: "Pengaturan loyalitas tersimpan" };
+}
+
+export async function updateInventorySettingsAction(
+  _prevState: SettingsActionState,
+  formData: FormData
+): Promise<SettingsActionState> {
+  const guard = await requirePermission("settings.manage");
+  if (!guard.ok) {
+    return { ...INITIAL, message: guard.message };
+  }
+  const container = await getAppContainer();
+  const result = await container.settings.updateInventorySettings.execute({
+    expiryWarningDays: Number(formData.get("expiryWarningDays") ?? 0),
+  });
+  if (isErr(result)) {
+    return {
+      ...INITIAL,
+      message: result.error.message,
+      fieldErrors: toFieldErrors(result.error),
+    };
+  }
+  revalidatePath("/pengaturan/inventori");
+  revalidatePath("/stok/kedaluwarsa");
+  revalidatePath("/");
+  return {
+    success: true,
+    message: "Pengaturan inventori tersimpan",
+  };
+}

@@ -8,6 +8,8 @@ import type {
 export interface VariantWithProduct {
   variant: ProductVariant;
   productName: string;
+  productId: string;
+  categoryId: string | null;
 }
 
 export interface VariantInput {
@@ -29,6 +31,7 @@ export interface CreateProductRecord {
   description?: string;
   imageUrl?: string | null;
   isActive?: boolean;
+  isBundle?: boolean;
   variants: VariantInput[];
 }
 
@@ -40,6 +43,7 @@ export interface UpdateProductRecord {
   description?: string;
   imageUrl?: string | null;
   isActive?: boolean;
+  isBundle?: boolean;
   variants?: VariantInput[];
 }
 

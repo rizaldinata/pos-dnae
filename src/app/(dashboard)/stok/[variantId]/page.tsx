@@ -17,6 +17,8 @@ import {
 import { StockMovementTypeFilter } from "@/modules/inventory/presentation/components/stock-movement-type-filter";
 import { StockMovementChart } from "@/modules/inventory/presentation/components/stock-movement-chart";
 import { isStockMovementType } from "@/modules/inventory/domain/entities/stock";
+import { classifyExpiry } from "@/modules/inventory/domain/services/expiry-policy";
+import { toISODateJakarta } from "@/shared/lib/date";
 
 export const dynamic = "force-dynamic";
 
@@ -56,20 +58,27 @@ export default async function StockCardPage({
   const page = Math.max(Number(query.page) || 1, 1);
 
   const container = await getAppContainer();
-  const result = await container.inventory.getStockCard.execute({
-    variantId,
-    type,
-    page,
-    pageSize: PAGE_SIZE,
-  });
+  const [result, settingsResult] = await Promise.all([
+    container.inventory.getStockCard.execute({
+      variantId,
+      type,
+      page,
+      pageSize: PAGE_SIZE,
+    }),
+    container.settings.getInventorySettings.execute(),
+  ]);
 
   if (isErr(result)) {
     throw new Error(result.error.message);
   }
-  const { overview, movements, total } = result.data;
+  const { overview, movements, total, batches } = result.data;
   if (!overview) {
     notFound();
   }
+  const warningDays = isErr(settingsResult)
+    ? 30
+    : settingsResult.data.expiryWarningDays;
+  const today = toISODateJakarta();
 
   const totalPages = Math.max(Math.ceil(total / PAGE_SIZE), 1);
 
@@ -140,6 +149,49 @@ export default async function StockCardPage({
         </Card>
       </div>
 
+      {batches && batches.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Batch aktif</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Urut FEFO — batch paling cepat kedaluwarsa terpakai lebih dulu
+            </p>
+          </CardHeader>
+          <CardContent>
+            <ul className="flex flex-col gap-1">
+              {batches.map((batch) => {
+                const status = batch.expiryDate
+                  ? classifyExpiry(batch.expiryDate, warningDays, today)
+                  : "ok";
+                return (
+                  <li
+                    key={batch.id}
+                    className="flex items-center justify-between gap-2 text-sm"
+                  >
+                    <span className="truncate font-mono text-xs">
+                      {batch.batchNo || "(tanpa no. batch)"}
+                    </span>
+                    <span className="flex shrink-0 items-center gap-2">
+                      <span className="text-muted-foreground">
+                        {batch.expiryDate ?? "tanpa kedaluwarsa"}
+                      </span>
+                      {status === "expired" ? (
+                        <Badge variant="destructive">Kedaluwarsa</Badge>
+                      ) : status === "expiring" ? (
+                        <Badge className="bg-amber-500/15 text-amber-600 hover:bg-amber-500/15 dark:text-amber-400">
+                          Mendekati
+                        </Badge>
+                      ) : null}
+                      <Badge variant="secondary">{batch.qty}</Badge>
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Riwayat pergerakan ({total})</h2>
         <StockMovementTypeFilter currentType={query.type ?? ""} />
@@ -156,6 +208,7 @@ export default async function StockCardPage({
               <TableHead className="text-right">Perubahan</TableHead>
               <TableHead className="text-right">Saldo</TableHead>
               <TableHead>Referensi</TableHead>
+              <TableHead>Batch</TableHead>
               <TableHead>Catatan</TableHead>
             </TableRow>
           </TableHeader>
@@ -193,6 +246,20 @@ export default async function StockCardPage({
                     <span className="text-xs text-muted-foreground">-</span>
                   )}
                 </TableCell>
+                <TableCell>
+                  {m.batchId ? (
+                    <span className="text-xs">
+                      {m.batchNo || "-"}
+                      {m.batchExpiryDate && (
+                        <span className="block text-muted-foreground">
+                          {m.batchExpiryDate}
+                        </span>
+                      )}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">-</span>
+                  )}
+                </TableCell>
                 <TableCell className="max-w-48 truncate text-muted-foreground">
                   {m.note || "-"}
                 </TableCell>
@@ -201,7 +268,7 @@ export default async function StockCardPage({
             {movements.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={7}
                   className="text-center text-muted-foreground"
                 >
                   Belum ada pergerakan stok

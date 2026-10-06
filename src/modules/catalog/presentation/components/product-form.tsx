@@ -8,6 +8,8 @@ import {
   type ProductActionState,
 } from "@/modules/catalog/presentation/actions/product.action";
 import { setPriceTiersAction } from "@/modules/catalog/presentation/actions/price-tier.action";
+import { uploadProductImageAction } from "@/modules/catalog/presentation/actions/photo.action";
+import imageCompression from "browser-image-compression";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
@@ -19,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/ui/table";
+import { generateEan13 } from "@/modules/catalog/domain/services/barcode";
 
 export interface VariantTierRow {
   minQty: string;
@@ -45,7 +48,9 @@ export interface ProductFormInitial {
   brandId: string;
   unitId: string;
   description: string;
+  imageUrl?: string | null;
   isActive: boolean;
+  isBundle?: boolean;
   variants: (Omit<VariantFormRow, "key" | "tiers"> & {
     tiers: { minQty: number; price: number }[];
   })[];
@@ -98,7 +103,12 @@ export function ProductForm({
   const [brandId, setBrandId] = useState(initial?.brandId ?? "");
   const [unitId, setUnitId] = useState(initial?.unitId ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
+  const [imageUrl, setImageUrl] = useState(initial?.imageUrl ?? "");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState(initial?.imageUrl ?? "");
+  const [photoMessage, setPhotoMessage] = useState<string | null>(null);
   const [isActive, setIsActive] = useState(initial?.isActive ?? true);
+  const [isBundle, setIsBundle] = useState(initial?.isBundle ?? false);
   const [variants, setVariants] = useState<VariantFormRow[]>(
     initial?.variants.map((v, i) => ({
       ...v,
@@ -190,6 +200,33 @@ export function ProductForm({
     return null;
   }
 
+  async function handlePhotoSelect(file: File | undefined) {
+    setPhotoMessage(null);
+    if (!file) {
+      setPhotoFile(null);
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      setPhotoMessage("File harus berupa gambar");
+      return;
+    }
+    try {
+      const compressed = await imageCompression(file, {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1024,
+        useWebWorker: true,
+      });
+      setPhotoFile(
+        new File([compressed], file.name, {
+          type: compressed.type || file.type,
+        })
+      );
+      setPhotoPreview(URL.createObjectURL(compressed));
+    } catch {
+      setPhotoMessage("Gagal mengompres gambar");
+    }
+  }
+
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData();
@@ -201,8 +238,12 @@ export function ProductForm({
     formData.set("brandId", brandId);
     formData.set("unitId", unitId);
     formData.set("description", description);
+    formData.set("imageUrl", imageUrl);
     if (isActive) {
       formData.set("isActive", "on");
+    }
+    if (isBundle) {
+      formData.set("isBundle", "on");
     }
     formData.set(
       "variants",
@@ -221,6 +262,20 @@ export function ProductForm({
     );
 
     startTransition(async () => {
+      if (photoFile) {
+        const uploadData = new FormData();
+        uploadData.set("photo", photoFile);
+        const uploaded = await uploadProductImageAction(uploadData);
+        if (!uploaded.success || !uploaded.url) {
+          setState({
+            success: false,
+            message: uploaded.message ?? "Upload foto gagal",
+          });
+          return;
+        }
+        formData.set("imageUrl", uploaded.url);
+        setImageUrl(uploaded.url);
+      }
       const result =
         mode === "create"
           ? await createProductAction(initialState, formData)
@@ -328,6 +383,37 @@ export function ProductForm({
             </div>
           </div>
           <div className="flex flex-col gap-2">
+            <span className={labelClass}>Foto produk</span>
+            <div className="flex items-center gap-3">
+              {photoPreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={photoPreview}
+                  alt="Foto produk"
+                  className="h-20 w-20 rounded-md border object-cover"
+                />
+              ) : (
+                <span className="text-xs text-muted-foreground">
+                  Belum ada foto
+                </span>
+              )}
+              <Input
+                id="product-photo"
+                type="file"
+                accept="image/*"
+                disabled={pending}
+                onChange={(e) => handlePhotoSelect(e.target.files?.[0])}
+                className="max-w-xs"
+              />
+            </div>
+            {photoMessage && (
+              <p className="text-xs text-muted-foreground">{photoMessage}</p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Dikompres otomatis (maks 1MB) sebelum diunggah.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2">
             <label htmlFor="product-description" className={labelClass}>
               Deskripsi
             </label>
@@ -350,6 +436,24 @@ export function ProductForm({
             />
             Produk aktif (tampil di kasir)
           </label>
+          <div className="flex flex-col gap-1">
+            <label className="flex min-h-11 items-center gap-2 text-sm font-medium">
+              <input
+                type="checkbox"
+                checked={isBundle}
+                onChange={(e) => setIsBundle(e.target.checked)}
+                disabled={pending}
+                className="size-4"
+              />
+              Bundle / paket (stok mengikuti komponen)
+            </label>
+            {isBundle && (
+              <p className="text-xs text-muted-foreground">
+                Saat bundle terjual, stok komponen yang berkurang — bukan stok
+                bundle. Komponen dapat diisi setelah produk tersimpan.
+              </p>
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -390,15 +494,29 @@ export function ProductForm({
                         />
                       </TableCell>
                       <TableCell>
-                        <Input
-                          value={v.barcode}
-                          onChange={(e) =>
-                            updateVariant(v.key, { barcode: e.target.value })
-                          }
-                          disabled={pending}
-                          className="min-w-28 font-mono"
-                          aria-label="Barcode varian"
-                        />
+                        <div className="flex flex-col gap-1">
+                          <Input
+                            value={v.barcode}
+                            onChange={(e) =>
+                              updateVariant(v.key, { barcode: e.target.value })
+                            }
+                            disabled={pending}
+                            className="min-w-28 font-mono"
+                            aria-label="Barcode varian"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            disabled={pending}
+                            onClick={() =>
+                              updateVariant(v.key, { barcode: generateEan13() })
+                            }
+                          >
+                            Generate EAN-13
+                          </Button>
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Input

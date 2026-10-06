@@ -205,4 +205,108 @@ export class SupabaseUserRepository implements IUserRepository {
     }
     return ok(updated.data);
   }
+
+  public async setPinHash(
+    id: string,
+    pinHash: string | null
+  ): Promise<Result<void, DomainError>> {
+    const { error } = await this.adminClient
+      .from("profiles")
+      .update({ pin_hash: pinHash, pin_attempts: 0, pin_locked_until: null })
+      .eq("id", id);
+    if (error) {
+      return err(this.toDomainError(error));
+    }
+    return ok(undefined);
+  }
+
+  public async recordPinFailure(
+    id: string,
+    maxAttempts: number,
+    lockMinutes: number
+  ): Promise<
+    Result<{ attempts: number; lockedUntil: Date | null }, DomainError>
+  > {
+    const { data, error } = await this.adminClient
+      .from("profiles")
+      .select("pin_attempts")
+      .eq("id", id)
+      .single();
+    if (error || !data) {
+      return err(
+        this.toDomainError(error ?? { message: "profil tidak ditemukan" })
+      );
+    }
+    const attempts =
+      Number((data as { pin_attempts: number }).pin_attempts ?? 0) + 1;
+    const lockedUntil =
+      attempts >= maxAttempts
+        ? new Date(Date.now() + lockMinutes * 60000).toISOString()
+        : null;
+    const { error: updateError } = await this.adminClient
+      .from("profiles")
+      .update({ pin_attempts: attempts, pin_locked_until: lockedUntil })
+      .eq("id", id);
+    if (updateError) {
+      return err(this.toDomainError(updateError));
+    }
+    return ok({
+      attempts,
+      lockedUntil: lockedUntil ? new Date(lockedUntil) : null,
+    });
+  }
+
+  public async resetPinAttempts(
+    id: string
+  ): Promise<Result<void, DomainError>> {
+    const { error } = await this.adminClient
+      .from("profiles")
+      .update({ pin_attempts: 0, pin_locked_until: null })
+      .eq("id", id);
+    if (error) {
+      return err(this.toDomainError(error));
+    }
+    return ok(undefined);
+  }
+
+  public async getPinStatus(id: string): Promise<
+    Result<
+      {
+        pinSet: boolean;
+        attempts: number;
+        lockedUntil: Date | null;
+        isActive: boolean;
+      },
+      DomainError
+    >
+  > {
+    const { data, error } = await this.adminClient
+      .from("profiles")
+      .select("pin_hash,pin_attempts,pin_locked_until,is_active")
+      .eq("id", id)
+      .maybeSingle();
+    if (error) {
+      return err(this.toDomainError(error));
+    }
+    if (data === null) {
+      return ok({
+        pinSet: false,
+        attempts: 0,
+        lockedUntil: null,
+        isActive: false,
+      });
+    }
+    const row = data as {
+      pin_hash: string | null;
+      pin_attempts: number;
+      pin_locked_until: string | null;
+      is_active: boolean;
+    };
+    return ok({
+      pinSet: !!row.pin_hash,
+      attempts: Number(row.pin_attempts ?? 0),
+      lockedUntil: row.pin_locked_until ? new Date(row.pin_locked_until) : null,
+      isActive: row.is_active,
+    });
+  }
 }

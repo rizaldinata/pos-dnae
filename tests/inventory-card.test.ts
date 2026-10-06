@@ -60,6 +60,10 @@ describe("GetStockCardUseCase", () => {
         throw new InvariantViolationError("not used");
       },
       countLowStock: async () => ok(0),
+      countExpiringBatches: async () => ok(0),
+      listExpiringBatches: async () =>
+        ok({ items: [], total: 0, page: 1, pageSize: 20 }),
+      listBatchesByVariant: async () => ok([]),
     };
     const movementRepo: IStockMovementRepository = {
       create: async () => err(new InvariantViolationError("not used")),

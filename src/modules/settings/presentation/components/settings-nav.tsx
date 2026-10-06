@@ -7,14 +7,30 @@ import { cn } from "@/shared/lib/utils";
 const TABS = [
   { href: "/pengaturan/toko", label: "Toko" },
   { href: "/pengaturan/pembayaran", label: "Pembayaran" },
+  { href: "/pengaturan/loyalitas", label: "Loyalitas" },
+  { href: "/pengaturan/inventori", label: "Inventori" },
   { href: "/pengaturan/users", label: "Pengguna" },
 ];
 
-export function SettingsNav({ showUsers }: { showUsers: boolean }) {
+export function SettingsNav({
+  showUsers,
+  showAudit,
+  showRoles,
+}: {
+  showUsers: boolean;
+  showAudit?: boolean;
+  showRoles?: boolean;
+}) {
   const pathname = usePathname();
-  const tabs = showUsers
+  let tabs = showUsers
     ? TABS
     : TABS.filter((t) => t.href !== "/pengaturan/users");
+  if (showAudit) {
+    tabs = [...tabs, { href: "/pengaturan/audit-log", label: "Audit Log" }];
+  }
+  if (showRoles) {
+    tabs = [...tabs, { href: "/pengaturan/roles", label: "Role" }];
+  }
 
   return (
     <nav className="flex gap-1 border-b" aria-label="Navigasi pengaturan">

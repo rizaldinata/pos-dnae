@@ -80,6 +80,12 @@ export function ReceiptPreview({
         <span>Total</span>
         <span>{formatRupiah(receipt.grandTotal)}</span>
       </div>
+      {receipt.status === "credit" && (
+        <div className="flex justify-between">
+          <span>Piutang</span>
+          <span>{formatRupiah(receipt.grandTotal - receipt.paidTotal)}</span>
+        </div>
+      )}
       {receipt.payments.map((p, index) => (
         <div key={index} className="flex justify-between">
           <span>

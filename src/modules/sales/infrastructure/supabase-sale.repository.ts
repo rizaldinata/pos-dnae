@@ -168,6 +168,15 @@ function mapRpcError(message: string): DomainError {
   if (message.includes("INVALID_PAYMENT_METHOD")) {
     return new InvalidPaymentMethodError();
   }
+  if (message.includes("INSUFFICIENT_POINTS")) {
+    return new ValidationError("Poin pelanggan tidak cukup");
+  }
+  if (message.includes("REDEEM_CUSTOMER_REQUIRED")) {
+    return new ValidationError("Penukaran poin wajib memilih pelanggan");
+  }
+  if (message.includes("REDEEM_EXCEEDS_TOTAL")) {
+    return new ValidationError("Poin melebihi sisa tagihan");
+  }
   if (message.includes("SALE_NOT_FOUND")) {
     return new SaleNotFoundError();
   }
@@ -205,6 +214,10 @@ export class SupabaseSaleRepository implements ISaleRepository {
         shift_id: record.shiftId ?? null,
         customer_id: record.customerId ?? null,
         allow_negative_stock: record.allowNegativeStock ?? false,
+        is_credit: record.isCredit ?? false,
+        promotion_id: record.promotionIds?.[0] ?? null,
+        voucher_code: record.voucherCode ?? null,
+        redeem_points: record.redeemPoints ?? 0,
         transaction_discount: record.transactionDiscount ?? 0,
         tax_total: record.taxTotal ?? 0,
         service_fee: record.serviceFee ?? 0,
@@ -213,6 +226,7 @@ export class SupabaseSaleRepository implements ISaleRepository {
           variant_id: item.variantId,
           qty: item.qty,
           discount: item.discount ?? 0,
+          is_gift: item.isGift ?? false,
         })),
         payments: record.payments.map((p) => ({
           payment_method_id: p.paymentMethodId,

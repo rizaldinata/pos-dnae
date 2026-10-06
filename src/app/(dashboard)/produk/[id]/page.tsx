@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@/shared/ui/table";
 import { DeleteProductButton } from "@/modules/catalog/presentation/components/delete-product-button";
+import { BarcodeSvg } from "@/modules/catalog/presentation/components/barcode-svg";
 import { formatRupiah } from "@/shared/lib/format-rupiah";
 
 export const dynamic = "force-dynamic";
@@ -76,6 +77,14 @@ export default async function ProductDetailPage({
         </div>
       </div>
 
+      {product.imageUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={product.imageUrl}
+          alt={product.name}
+          className="h-40 w-40 rounded-md border object-cover"
+        />
+      )}
       <div className="flex gap-2">
         <Badge variant={product.isActive ? "default" : "secondary"}>
           {product.isActive ? "Aktif" : "Nonaktif"}
@@ -115,6 +124,11 @@ export default async function ProductDetailPage({
                     </TableCell>
                     <TableCell className="font-mono text-xs">
                       {v.barcode ?? "-"}
+                      {v.barcode && (
+                        <div className="mt-1 w-32">
+                          <BarcodeSvg value={v.barcode} showText={false} />
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       {formatRupiah(v.costPrice.amount)}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, startTransition, useState } from "react";
 import { useCartStore } from "@/modules/sales/presentation/hooks/use-cart-store";
 import { POSProductSearch } from "@/modules/sales/presentation/components/pos-product-search";
 import { CustomerPicker } from "@/modules/sales/presentation/components/customer-picker";
@@ -16,6 +16,7 @@ import {
   getCurrentShiftAction,
   type ShiftDTO,
 } from "@/modules/shifts/presentation/actions/shift.action";
+import { getActivePromotionsAction } from "@/modules/promotions/presentation/actions/promotion.action";
 import { Badge } from "@/shared/ui/badge";
 import { formatRupiah } from "@/shared/lib/format-rupiah";
 
@@ -48,6 +49,7 @@ export function KasirScreen({
 }) {
   const setRole = useCartStore((s) => s.setRole);
   const setPricing = useCartStore((s) => s.setPricing);
+  const setPromotions = useCartStore((s) => s.setPromotions);
   const [shift, setShift] = useState<ShiftDTO | null>(initialShift);
   const [now, setNow] = useState(() => Date.now());
 
@@ -60,6 +62,21 @@ export function KasirScreen({
     setRole(roleName);
     setPricing(initialPricing);
   }, [roleName, setRole, initialPricing, setPricing]);
+
+  // Promo aktif diambil sekali per pembukaan layar (preview client;
+  // server mengevaluasi ulang saat checkout).
+  useEffect(() => {
+    let cancelled = false;
+    startTransition(async () => {
+      const promos = await getActivePromotionsAction();
+      if (!cancelled) {
+        setPromotions(promos);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [setPromotions]);
 
   useEffect(() => {
     if (!shift) {

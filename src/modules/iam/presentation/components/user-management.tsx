@@ -6,6 +6,7 @@ import {
   updateUserAction,
   type UsersActionState,
 } from "@/modules/iam/presentation/actions/users.action";
+import { setPinAction } from "@/modules/iam/presentation/actions/pin.action";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Badge } from "@/shared/ui/badge";
@@ -106,6 +107,20 @@ export function UserManagement({
   function handleUpdate(formData: FormData) {
     startUpdate(async () => {
       const result = await updateUserAction(initialState, formData);
+      const pin = String(formData.get("pin") ?? "").trim();
+      if (result.success && pin !== "") {
+        const pinResult = await setPinAction(
+          String(formData.get("userId") ?? ""),
+          pin
+        );
+        if (!pinResult.success) {
+          setUpdateState({
+            success: false,
+            message: `Data tersimpan, tetapi PIN gagal: ${pinResult.message}`,
+          });
+          return;
+        }
+      }
       setUpdateState(result);
       if (result.success) {
         setEditing(null);
@@ -299,6 +314,23 @@ export function UserManagement({
                   roles={roles}
                   defaultValue={editing.roleId}
                   disabled={updatePending}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label htmlFor="edit-pin" className="text-sm font-medium">
+                  PIN kasir{" "}
+                  <span className="font-normal text-muted-foreground">
+                    (4-6 digit, kosongkan bila tidak diubah)
+                  </span>
+                </label>
+                <Input
+                  id="edit-pin"
+                  name="pin"
+                  inputMode="numeric"
+                  maxLength={6}
+                  disabled={updatePending}
+                  placeholder="••••"
+                  className="min-h-11 max-w-40"
                 />
               </div>
               <label className="flex min-h-11 items-center gap-2 text-sm font-medium">

@@ -28,6 +28,7 @@ export interface CartTier {
 export interface CartItemData {
   variantId: string;
   productId: string;
+  categoryId: string | null;
   productName: string;
   variantName: string;
   sku: string;
@@ -47,6 +48,33 @@ export interface DiscountData {
   value: number;
 }
 
+export interface CartPromotion {
+  id: string;
+  name: string;
+  type: "percent" | "amount" | "bogo";
+  scope: "all" | "category" | "product";
+  scopeRefId: string | null;
+  value: number;
+  buyQty: number;
+  getQty: number;
+  minPurchase: number;
+  startAt: string;
+  endAt: string;
+  isActive: boolean;
+}
+
+export interface CartVoucher {
+  code: string;
+  discount: number;
+}
+
+export interface CartRedeem {
+  /** Jumlah poin yang ditukar. */
+  points: number;
+  /** Potongan rupiah hasil preview server; checkout memvalidasi ulang. */
+  discount: number;
+}
+
 export interface SelectedCustomer {
   id: string;
   name: string;
@@ -58,10 +86,18 @@ interface CartState {
   items: CartItemData[];
   transactionDiscount: DiscountData | null;
   selectedCustomer: SelectedCustomer | null;
+  promotions: CartPromotion[];
+  voucher: CartVoucher | null;
+  redeem: CartRedeem | null;
   pricing: PricingSettings;
   roleName: string;
   setPricing: (pricing: PricingSettings) => void;
   setRole: (roleName: string) => void;
+  setPromotions: (promotions: CartPromotion[]) => void;
+  setVoucher: (voucher: CartVoucher | null) => void;
+  clearVoucher: () => void;
+  setRedeem: (redeem: CartRedeem | null) => void;
+  clearRedeem: () => void;
   selectCustomer: (customer: SelectedCustomer) => void;
   clearCustomer: () => void;
   addItem: (variant: POSVariant) => string | null;
@@ -138,6 +174,9 @@ export const useCartStore = create<CartState>()(
       items: [],
       transactionDiscount: null,
       selectedCustomer: null,
+      promotions: [],
+      voucher: null,
+      redeem: null,
       pricing: { ...DEFAULT_PRICING_SETTINGS },
       roleName: "Kasir",
 
@@ -145,9 +184,15 @@ export const useCartStore = create<CartState>()(
 
       setRole: (roleName) => set({ roleName }),
 
-      selectCustomer: (customer) => set({ selectedCustomer: customer }),
+      // Poin melekat pada pelanggan: ganti pelanggan = reset penukaran.
+      selectCustomer: (customer) =>
+        set((state) => ({
+          selectedCustomer: customer,
+          redeem:
+            state.selectedCustomer?.id === customer.id ? state.redeem : null,
+        })),
 
-      clearCustomer: () => set({ selectedCustomer: null }),
+      clearCustomer: () => set({ selectedCustomer: null, redeem: null }),
 
       addItem: (variant) => {
         const existing = get().items.find(
@@ -167,6 +212,7 @@ export const useCartStore = create<CartState>()(
         const data: CartItemData = {
           variantId: variant.variantId,
           productId: variant.productId,
+          categoryId: variant.categoryId,
           productName: variant.productName,
           variantName: variant.variantName,
           sku: variant.sku,
@@ -257,8 +303,24 @@ export const useCartStore = create<CartState>()(
         return null;
       },
 
+      setPromotions: (promotions: CartPromotion[]) => set({ promotions }),
+
+      setVoucher: (voucher: CartVoucher | null) => set({ voucher }),
+
+      clearVoucher: () => set({ voucher: null }),
+
+      setRedeem: (redeem: CartRedeem | null) => set({ redeem }),
+
+      clearRedeem: () => set({ redeem: null }),
+
       clearCart: () =>
-        set({ items: [], transactionDiscount: null, selectedCustomer: null }),
+        set({
+          items: [],
+          transactionDiscount: null,
+          selectedCustomer: null,
+          voucher: null,
+          redeem: null,
+        }),
     }),
     {
       name: "pos-cart",
@@ -267,6 +329,8 @@ export const useCartStore = create<CartState>()(
         items: state.items,
         transactionDiscount: state.transactionDiscount,
         selectedCustomer: state.selectedCustomer,
+        voucher: state.voucher,
+        redeem: state.redeem,
         pricing: state.pricing,
       }),
     }

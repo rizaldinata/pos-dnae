@@ -12,6 +12,7 @@ export interface POSTier {
 export interface POSVariant {
   variantId: string;
   productId: string;
+  categoryId: string | null;
   productName: string;
   variantName: string;
   displayName: string;
@@ -22,6 +23,8 @@ export interface POSVariant {
   stockQty: number | null;
   trackStock: boolean;
   minStock: number;
+  /** true bila varian berasal dari produk bundle (opsional: tidak semua sumber tahu). */
+  isBundle?: boolean;
   tiers: POSTier[];
 }
 
@@ -29,6 +32,7 @@ export interface POSProduct {
   productId: string;
   name: string;
   categoryName: string | null;
+  imageUrl: string | null;
   variants: POSVariant[];
 }
 
@@ -40,9 +44,11 @@ function toPOSProduct(
     productId: product.id,
     name: product.name,
     categoryName: product.categoryName ?? null,
+    imageUrl: product.imageUrl,
     variants: product.variants.map((v) => ({
       variantId: v.id,
       productId: product.id,
+      categoryId: product.categoryId,
       productName: product.name,
       variantName: v.variantName,
       displayName: v.variantName
@@ -55,6 +61,7 @@ function toPOSProduct(
       stockQty: v.stockQty ?? null,
       trackStock: v.trackStock,
       minStock: v.minStock,
+      isBundle: product.isBundle,
       tiers: tiersByVariant[v.id] ?? [],
     })),
   };

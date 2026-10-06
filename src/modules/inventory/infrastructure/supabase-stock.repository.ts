@@ -3,7 +3,11 @@ import type { Database } from "@/shared/infrastructure/supabase/types";
 import type {
   IStockMovementRepository,
   IStockRepository,
+  ExpiringBatchFilter,
+  ExpiringBatchItem,
+  ExpiringBatchResult,
   RecordMovementRecord,
+  StockBatchInfo,
   StockCardFilter,
   StockCardResult,
   StockOverviewFilter,
@@ -29,9 +33,27 @@ import {
   ValidationError,
   type DomainError,
 } from "@/shared/kernel/errors";
+import {
+  addDaysIso,
+  classifyExpiry,
+} from "@/modules/inventory/domain/services/expiry-policy";
+import { toISODateJakarta } from "@/shared/lib/date";
 
 const OVERVIEW_SELECT =
   "variant_id,product_id,product_name,variant_name,sku,barcode,category_id,category_name,min_stock,track_stock,qty,status";
+
+interface ExpiringBatchRow {
+  id: string;
+  variant_id: string;
+  batch_no: string;
+  qty: number | string;
+  expiry_date: string;
+  product_variants: {
+    sku: string;
+    variant_name: string;
+    products: { name: string };
+  };
+}
 
 function sanitizeLikeQuery(query: string): string {
   return query
@@ -166,10 +188,126 @@ export class SupabaseStockRepository implements IStockRepository {
       .filter((item): item is NonNullable<typeof item> => item !== null);
     return ok({ items, total: count ?? 0, page, pageSize });
   }
+
+  public async countExpiringBatches(
+    warningDays: number
+  ): Promise<Result<number, DomainError>> {
+    const today = toISODateJakarta();
+    const cutoff = addDaysIso(today, warningDays);
+    const { count, error } = await this.client
+      .from("stock_batches")
+      .select("id", { count: "exact", head: true })
+      .not("expiry_date", "is", null)
+      .gt("qty", 0)
+      .lte("expiry_date", cutoff);
+    if (error) {
+      return err(
+        new InvariantViolationError(`Database error: ${error.message}`)
+      );
+    }
+    return ok(count ?? 0);
+  }
+
+  public async listExpiringBatches(
+    filter: ExpiringBatchFilter
+  ): Promise<Result<ExpiringBatchResult, DomainError>> {
+    const page = filter.page ?? 1;
+    const pageSize = Math.min(Math.max(filter.pageSize ?? 20, 1), 100);
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    const warningDays = Math.min(Math.max(filter.warningDays, 1), 365);
+    const today = toISODateJakarta();
+    const cutoff = addDaysIso(today, warningDays);
+
+    let query = this.client
+      .from("stock_batches")
+      .select(
+        `id,
+         variant_id,
+         batch_no,
+         qty,
+         expiry_date,
+         product_variants!inner (
+           sku,
+           variant_name,
+           products!inner ( name )
+         )`,
+        { count: "exact" }
+      )
+      .not("expiry_date", "is", null)
+      .gt("qty", 0)
+      .lte("expiry_date", cutoff);
+
+    if (filter.status === "expired") {
+      query = query.lt("expiry_date", today);
+    } else if (filter.status === "expiring") {
+      query = query.gte("expiry_date", today);
+    }
+
+    const { data, error, count } = await query
+      .order("expiry_date", { ascending: true })
+      .order("created_at", { ascending: true })
+      .range(from, to);
+
+    if (error) {
+      return err(
+        new InvariantViolationError(`Database error: ${error.message}`)
+      );
+    }
+
+    const items = ((data ?? []) as unknown as ExpiringBatchRow[])
+      .map((row): ExpiringBatchItem | null => {
+        const status = classifyExpiry(row.expiry_date, warningDays, today);
+        if (status === "ok") {
+          return null;
+        }
+        return {
+          id: row.id,
+          variantId: row.variant_id,
+          productName: row.product_variants.products.name,
+          variantName: row.product_variants.variant_name,
+          sku: row.product_variants.sku,
+          batchNo: row.batch_no,
+          qty: Number(row.qty),
+          expiryDate: row.expiry_date,
+          status,
+        };
+      })
+      .filter((item): item is ExpiringBatchItem => item !== null);
+
+    return ok({ items, total: count ?? 0, page, pageSize });
+  }
+
+  public async listBatchesByVariant(
+    variantId: string
+  ): Promise<Result<StockBatchInfo[], DomainError>> {
+    const { data, error } = await this.client
+      .from("stock_batches")
+      .select("id,batch_no,qty,expiry_date")
+      .eq("variant_id", variantId)
+      .gt("qty", 0)
+      .order("expiry_date", { ascending: true, nullsFirst: false })
+      .order("created_at", { ascending: true })
+      .limit(50);
+    if (error) {
+      return err(
+        new InvariantViolationError(`Database error: ${error.message}`)
+      );
+    }
+    return ok(
+      (data ?? []).map((row) => ({
+        id: row.id,
+        batchNo: row.batch_no,
+        qty: Number(row.qty),
+        expiryDate: row.expiry_date,
+      }))
+    );
+  }
 }
 
 const MOVEMENT_SELECT =
-  "id,variant_id,type,qty_change,balance_after,ref_type,ref_id,note,created_by,created_at";
+  "id,variant_id,type,qty_change,balance_after,ref_type,ref_id,note,created_by,created_at,batch_id,stock_batches(batch_no,expiry_date)";
 
 export class SupabaseStockMovementRepository implements IStockMovementRepository {
   constructor(

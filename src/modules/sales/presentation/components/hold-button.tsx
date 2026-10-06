@@ -107,6 +107,7 @@ export function HeldSalesDialog({ refreshKey }: { refreshKey: number }) {
         const error = addItem({
           variantId: item.variantId,
           productId: "",
+          categoryId: null,
           productName: item.productName,
           variantName: item.variantName,
           displayName: item.variantName

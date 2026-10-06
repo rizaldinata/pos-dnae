@@ -32,7 +32,11 @@ export default async function UsersPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <SettingsNav showUsers={true} />
+      <SettingsNav
+        showUsers={true}
+        showAudit={currentUser.hasPermission("audit.view")}
+        showRoles={currentUser.hasPermission("role.manage")}
+      />
       <UserManagement
         users={usersResult.data.map((u) => ({
           id: u.id,

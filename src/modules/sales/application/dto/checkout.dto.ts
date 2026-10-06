@@ -13,6 +13,7 @@ export const CheckoutItemSchema = z.object({
     .number({ error: "Qty harus angka" })
     .positive({ error: "Qty harus lebih dari 0" }),
   discount: DiscountValueSchema.optional(),
+  isGift: z.boolean().optional().default(false),
 });
 
 export const CheckoutPaymentSchema = z.object({
@@ -31,6 +32,17 @@ export const TransactionDiscountSchema = z.object({
 });
 
 export const CheckoutSchema = z.object({
+  isCredit: z.boolean().optional().default(false),
+  // Promo diterapkan otomatis oleh server (PromotionEngine), klien tidak mengirim ID promo.
+  voucherCode: z.string().trim().max(20).nullish(),
+  // Penukaran poin: jumlah poin; nilai rupiah dihitung server (loyalty.point_value).
+  redeemPoints: z
+    .number({ error: "Poin harus angka" })
+    .int({ error: "Poin harus bilangan bulat" })
+    .min(0, { error: "Poin minimal 0" })
+    .max(10_000_000, { error: "Poin maksimal 10.000.000" })
+    .optional()
+    .default(0),
   transactionDiscount: TransactionDiscountSchema.optional(),
   items: z
     .array(CheckoutItemSchema, { error: "Item tidak valid" })
@@ -38,8 +50,9 @@ export const CheckoutSchema = z.object({
     .max(100, { error: "Maksimal 100 baris item" }),
   payments: z
     .array(CheckoutPaymentSchema, { error: "Pembayaran tidak valid" })
-    .min(1, { error: "Pembayaran wajib diisi" })
-    .max(10, { error: "Maksimal 10 metode bayar" }),
+    .max(10, { error: "Maksimal 10 metode bayar" })
+    .optional()
+    .default([]),
   customerId: z.uuid({ error: "ID pelanggan tidak valid" }).nullish(),
   idempotencyKey: z.uuid({ error: "Idempotency key tidak valid" }).optional(),
 });

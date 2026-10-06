@@ -61,6 +61,10 @@ function setupStocks() {
     adjustStock: async (record) =>
       ok({ variantId: record.variantId, oldQty: 100, newQty: record.newQty }),
     countLowStock: async () => ok(0),
+    countExpiringBatches: async () => ok(0),
+    listExpiringBatches: async () =>
+      ok({ items: [], total: 0, page: 1, pageSize: 20 }),
+    listBatchesByVariant: async () => ok([]),
   };
   return new AdjustStockUseCase(repo);
 }
@@ -98,6 +102,10 @@ describe("AdjustStockUseCase", () => {
         throw new Error("unreachable");
       },
       countLowStock: async () => ok(0),
+      countExpiringBatches: async () => ok(0),
+      listExpiringBatches: async () =>
+        ok({ items: [], total: 0, page: 1, pageSize: 20 }),
+      listBatchesByVariant: async () => ok([]),
     };
     const result = await new AdjustStockUseCase(repo).execute("v-1", {
       newQty: 1,

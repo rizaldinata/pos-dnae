@@ -3,6 +3,7 @@ import { getAppContainer } from "@/di/container";
 import { requirePermission } from "@/modules/iam/presentation/actions/require-permission";
 import { isErr } from "@/shared/kernel/result";
 import { ProductForm } from "@/modules/catalog/presentation/components/product-form";
+import { BundleItemsEditor } from "@/modules/catalog/presentation/components/bundle-items-editor";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,13 @@ export default async function EditProductPage({
 
   const product = productResult.data;
 
+  const bundleItemsResult = product.isBundle
+    ? await container.catalog.getBundleItems.execute(product.id)
+    : null;
+  if (bundleItemsResult && isErr(bundleItemsResult)) {
+    throw new Error(bundleItemsResult.error.message);
+  }
+
   const tiersByVariant: Record<string, { minQty: number; price: number }[]> =
     {};
   await Promise.all(
@@ -72,7 +80,9 @@ export default async function EditProductPage({
           brandId: product.brandId ?? "",
           unitId: product.unitId ?? "",
           description: product.description,
+          imageUrl: product.imageUrl,
           isActive: product.isActive,
+          isBundle: product.isBundle,
           variants: product.variants.map((v) => ({
             id: v.id,
             sku: v.sku.value,
@@ -96,6 +106,12 @@ export default async function EditProductPage({
           shortName: u.shortName,
         }))}
       />
+      {product.isBundle && bundleItemsResult && (
+        <BundleItemsEditor
+          productId={product.id}
+          initial={bundleItemsResult.data}
+        />
+      )}
     </div>
   );
 }

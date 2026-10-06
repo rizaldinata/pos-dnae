@@ -24,6 +24,10 @@ import {
   type ProductRow,
   type VariantRow,
 } from "@/modules/catalog/infrastructure/mappers/catalog.mapper";
+import {
+  computeBundleStockQty,
+  type BundleComponentStock,
+} from "@/modules/catalog/domain/services/bundle-policy";
 import { err, ok, type Result } from "@/shared/kernel/result";
 import {
   ConflictError,
@@ -150,8 +154,15 @@ export class SupabaseProductRepository implements IProductRepository {
     if (data === null) {
       return ok(null);
     }
-    const row = data as unknown as VariantRow & { products: { name: string } };
-    return ok({ variant: mapVariantRow(row), productName: row.products.name });
+    const row = data as unknown as VariantRow & {
+      products: { id: string; name: string; category_id: string | null };
+    };
+    return ok({
+      variant: mapVariantRow(row),
+      productName: row.products.name,
+      productId: row.products.id,
+      categoryId: row.products.category_id,
+    });
   }
 
   public async findBySku(
@@ -248,8 +259,88 @@ export class SupabaseProductRepository implements IProductRepository {
         new InvariantViolationError(`Database error: ${error.message}`)
       );
     }
-    const items = ((data ?? []) as unknown as ProductRow[]).map(mapProductRow);
+    const rows = (data ?? []) as unknown as ProductRow[];
+    const overridesResult = await this.computeBundleStockOverrides(rows);
+    if (!overridesResult.success) {
+      return err(overridesResult.error);
+    }
+    const overrides = overridesResult.data;
+    const items = rows.map((row) => {
+      if (!row.is_bundle) {
+        return mapProductRow(row);
+      }
+      // Varian bundle tidak punya stok sendiri; tampilkan stok efektif
+      // yang bisa dirakit dari komponennya.
+      return mapProductRow({
+        ...row,
+        product_variants: row.product_variants.map((v) => {
+          const effectiveQty = overrides[v.id];
+          return effectiveQty === undefined
+            ? v
+            : { ...v, stocks: { qty: effectiveQty } };
+        }),
+      });
+    });
     return ok({ items, total: count ?? 0, page, pageSize });
+  }
+
+  /** Stok efektif per varian bundle: min atas floor(stok komponen / qty). */
+  private async computeBundleStockOverrides(
+    rows: ProductRow[]
+  ): Promise<Result<Record<string, number>, DomainError>> {
+    const bundleVariantIds = rows
+      .filter((row) => row.is_bundle)
+      .flatMap((row) => row.product_variants.map((v) => v.id));
+    if (bundleVariantIds.length === 0) {
+      return ok({});
+    }
+
+    const { data: bundleRows, error: bundleError } = await this.client
+      .from("bundle_items")
+      .select("bundle_variant_id,component_variant_id,qty")
+      .in("bundle_variant_id", bundleVariantIds);
+    if (bundleError) {
+      return err(
+        new InvariantViolationError(`Database error: ${bundleError.message}`)
+      );
+    }
+    const rowsBundle = bundleRows ?? [];
+    if (rowsBundle.length === 0) {
+      return ok({});
+    }
+
+    const componentIds = [
+      ...new Set(rowsBundle.map((r) => r.component_variant_id)),
+    ];
+    const { data: stockRows, error: stockError } = await this.client
+      .from("stocks")
+      .select("variant_id,qty")
+      .in("variant_id", componentIds);
+    if (stockError) {
+      return err(
+        new InvariantViolationError(`Database error: ${stockError.message}`)
+      );
+    }
+    const stockByVariant = new Map(
+      (stockRows ?? []).map((r) => [r.variant_id, Number(r.qty)])
+    );
+
+    const grouped = new Map<string, BundleComponentStock[]>();
+    for (const row of rowsBundle) {
+      const list = grouped.get(row.bundle_variant_id) ?? [];
+      list.push({
+        variantId: row.component_variant_id,
+        qty: Number(row.qty),
+        stockQty: stockByVariant.get(row.component_variant_id) ?? 0,
+      });
+      grouped.set(row.bundle_variant_id, list);
+    }
+
+    const overrides: Record<string, number> = {};
+    for (const [variantId, components] of grouped) {
+      overrides[variantId] = computeBundleStockQty(components);
+    }
+    return ok(overrides);
   }
 
   public async create(
@@ -265,6 +356,7 @@ export class SupabaseProductRepository implements IProductRepository {
         description: record.description ?? "",
         image_url: record.imageUrl ?? null,
         is_active: record.isActive ?? true,
+        is_bundle: record.isBundle ?? false,
       })
       .select("id")
       .single();
@@ -341,6 +433,7 @@ export class SupabaseProductRepository implements IProductRepository {
       description?: string;
       image_url?: string | null;
       is_active?: boolean;
+      is_bundle?: boolean;
     } = {};
     if (patch.name !== undefined) {
       productPayload.name = patch.name;
@@ -363,6 +456,9 @@ export class SupabaseProductRepository implements IProductRepository {
     if (patch.isActive !== undefined) {
       productPayload.is_active = patch.isActive;
     }
+    if (patch.isBundle !== undefined) {
+      productPayload.is_bundle = patch.isBundle;
+    }
 
     if (Object.keys(productPayload).length > 0) {
       const { error } = await this.client
@@ -380,6 +476,10 @@ export class SupabaseProductRepository implements IProductRepository {
         return err(variantsResult.error);
       }
     }
+
+    // Produk bundle: varian baru harus memiliki baris komponen yang sama
+    // dengan varian lain agar checkout tidak gagal BUNDLE_EMPTY.
+    await this.ensureBundleItems(id);
 
     const updated = await this.findById(id);
     if (!updated.success) {
@@ -499,6 +599,56 @@ export class SupabaseProductRepository implements IProductRepository {
       );
     }
     return ok(undefined);
+  }
+
+  /** Salin komponen bundle ke varian yang belum memilikinya (best effort). */
+  private async ensureBundleItems(productId: string): Promise<void> {
+    const { data: product } = await this.client
+      .from("products")
+      .select("is_bundle")
+      .eq("id", productId)
+      .maybeSingle();
+    if (!product?.is_bundle) {
+      return;
+    }
+
+    const { data: variants } = await this.client
+      .from("product_variants")
+      .select("id")
+      .eq("product_id", productId);
+    const variantIds = (variants ?? []).map((v) => v.id);
+    if (variantIds.length === 0) {
+      return;
+    }
+
+    const { data: existing } = await this.client
+      .from("bundle_items")
+      .select("bundle_variant_id")
+      .in("bundle_variant_id", variantIds);
+    const covered = new Set((existing ?? []).map((r) => r.bundle_variant_id));
+    const missing = variantIds.filter((id) => !covered.has(id));
+    const sourceId = [...covered][0];
+    if (missing.length === 0 || !sourceId) {
+      return;
+    }
+
+    const { data: sourceItems } = await this.client
+      .from("bundle_items")
+      .select("component_variant_id,qty")
+      .eq("bundle_variant_id", sourceId);
+    if (!sourceItems || sourceItems.length === 0) {
+      return;
+    }
+
+    await this.client.from("bundle_items").insert(
+      missing.flatMap((variantId) =>
+        sourceItems.map((item) => ({
+          bundle_variant_id: variantId,
+          component_variant_id: item.component_variant_id,
+          qty: item.qty,
+        }))
+      )
+    );
   }
 
   private mapWriteError(error: PostgrestErrorLike | null): DomainError {

@@ -253,6 +253,209 @@ export type Database = {
         };
         Relationships: [];
       };
+      expense_categories: {
+        Row: {
+          created_at: string;
+          id: string;
+          name: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          name: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          name?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      expenses: {
+        Row: {
+          amount: number;
+          category_id: string;
+          created_at: string;
+          created_by: string | null;
+          expense_date: string;
+          id: string;
+          note: string;
+          updated_at: string;
+        };
+        Insert: {
+          amount: number;
+          category_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          expense_date?: string;
+          id?: string;
+          note?: string;
+          updated_at?: string;
+        };
+        Update: {
+          amount?: number;
+          category_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          expense_date?: string;
+          id?: string;
+          note?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "expenses_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "expense_categories";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      goods_receipt_items: {
+        Row: {
+          batch_no: string;
+          cost_price: number;
+          created_at: string;
+          expiry_date: string | null;
+          gr_id: string;
+          id: string;
+          qty: number;
+          variant_id: string;
+        };
+        Insert: {
+          batch_no?: string;
+          cost_price: number;
+          created_at?: string;
+          expiry_date?: string | null;
+          gr_id: string;
+          id?: string;
+          qty: number;
+          variant_id: string;
+        };
+        Update: {
+          batch_no?: string;
+          cost_price?: number;
+          created_at?: string;
+          expiry_date?: string | null;
+          gr_id?: string;
+          id?: string;
+          qty?: number;
+          variant_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "goods_receipt_items_gr_id_fkey";
+            columns: ["gr_id"];
+            isOneToOne: false;
+            referencedRelation: "goods_receipts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "goods_receipt_items_variant_id_fkey";
+            columns: ["variant_id"];
+            isOneToOne: false;
+            referencedRelation: "product_variants";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "goods_receipt_items_variant_id_fkey";
+            columns: ["variant_id"];
+            isOneToOne: false;
+            referencedRelation: "stock_overview";
+            referencedColumns: ["variant_id"];
+          },
+        ];
+      };
+      goods_receipts: {
+        Row: {
+          created_at: string;
+          gr_no: string;
+          id: string;
+          note: string;
+          po_id: string;
+          received_at: string;
+          received_by: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          gr_no: string;
+          id?: string;
+          note?: string;
+          po_id: string;
+          received_at?: string;
+          received_by?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          gr_no?: string;
+          id?: string;
+          note?: string;
+          po_id?: string;
+          received_at?: string;
+          received_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "goods_receipts_po_id_fkey";
+            columns: ["po_id"];
+            isOneToOne: false;
+            referencedRelation: "purchase_orders";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      loyalty_transactions: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          customer_id: string;
+          id: string;
+          note: string | null;
+          points: number;
+          sale_id: string | null;
+          type: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          customer_id: string;
+          id?: string;
+          note?: string | null;
+          points: number;
+          sale_id?: string | null;
+          type: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          customer_id?: string;
+          id?: string;
+          note?: string | null;
+          points?: number;
+          sale_id?: string | null;
+          type?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_transactions_customer_id_fkey";
+            columns: ["customer_id"];
+            isOneToOne: false;
+            referencedRelation: "customers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "loyalty_transactions_sale_id_fkey";
+            columns: ["sale_id"];
+            isOneToOne: false;
+            referencedRelation: "sales";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       number_sequences: {
         Row: {
           last_value: number;
@@ -493,7 +696,9 @@ export type Database = {
           full_name: string;
           id: string;
           is_active: boolean;
+          pin_attempts: number;
           pin_hash: string | null;
+          pin_locked_until: string | null;
           role_id: string | null;
           updated_at: string;
         };
@@ -502,7 +707,9 @@ export type Database = {
           full_name?: string;
           id: string;
           is_active?: boolean;
+          pin_attempts?: number;
           pin_hash?: string | null;
+          pin_locked_until?: string | null;
           role_id?: string | null;
           updated_at?: string;
         };
@@ -511,7 +718,9 @@ export type Database = {
           full_name?: string;
           id?: string;
           is_active?: boolean;
+          pin_attempts?: number;
           pin_hash?: string | null;
+          pin_locked_until?: string | null;
           role_id?: string | null;
           updated_at?: string;
         };
@@ -521,6 +730,301 @@ export type Database = {
             columns: ["role_id"];
             isOneToOne: false;
             referencedRelation: "roles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      promotions: {
+        Row: {
+          buy_qty: number;
+          created_at: string;
+          end_at: string;
+          get_qty: number;
+          id: string;
+          is_active: boolean;
+          min_purchase: number;
+          name: string;
+          scope: string;
+          scope_ref_id: string | null;
+          start_at: string;
+          type: string;
+          updated_at: string;
+          value: number;
+        };
+        Insert: {
+          buy_qty?: number;
+          created_at?: string;
+          end_at?: string;
+          get_qty?: number;
+          id?: string;
+          is_active?: boolean;
+          min_purchase?: number;
+          name: string;
+          scope?: string;
+          scope_ref_id?: string | null;
+          start_at?: string;
+          type: string;
+          updated_at?: string;
+          value?: number;
+        };
+        Update: {
+          buy_qty?: number;
+          created_at?: string;
+          end_at?: string;
+          get_qty?: number;
+          id?: string;
+          is_active?: boolean;
+          min_purchase?: number;
+          name?: string;
+          scope?: string;
+          scope_ref_id?: string | null;
+          start_at?: string;
+          type?: string;
+          updated_at?: string;
+          value?: number;
+        };
+        Relationships: [];
+      };
+      purchase_order_items: {
+        Row: {
+          cost_price: number;
+          created_at: string;
+          id: string;
+          po_id: string;
+          qty: number;
+          received_qty: number;
+          variant_id: string;
+        };
+        Insert: {
+          cost_price: number;
+          created_at?: string;
+          id?: string;
+          po_id: string;
+          qty: number;
+          received_qty?: number;
+          variant_id: string;
+        };
+        Update: {
+          cost_price?: number;
+          created_at?: string;
+          id?: string;
+          po_id?: string;
+          qty?: number;
+          received_qty?: number;
+          variant_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "purchase_order_items_po_id_fkey";
+            columns: ["po_id"];
+            isOneToOne: false;
+            referencedRelation: "purchase_orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "purchase_order_items_variant_id_fkey";
+            columns: ["variant_id"];
+            isOneToOne: false;
+            referencedRelation: "product_variants";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "purchase_order_items_variant_id_fkey";
+            columns: ["variant_id"];
+            isOneToOne: false;
+            referencedRelation: "stock_overview";
+            referencedColumns: ["variant_id"];
+          },
+        ];
+      };
+      purchase_orders: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          notes: string;
+          order_date: string;
+          po_no: string;
+          status: string;
+          supplier_id: string;
+          total: number;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          notes?: string;
+          order_date?: string;
+          po_no: string;
+          status?: string;
+          supplier_id: string;
+          total?: number;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          notes?: string;
+          order_date?: string;
+          po_no?: string;
+          status?: string;
+          supplier_id?: string;
+          total?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "purchase_orders_supplier_id_fkey";
+            columns: ["supplier_id"];
+            isOneToOne: false;
+            referencedRelation: "suppliers";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      purchase_return_items: {
+        Row: {
+          cost_price: number;
+          created_at: string;
+          id: string;
+          qty: number;
+          return_id: string;
+          variant_id: string;
+        };
+        Insert: {
+          cost_price: number;
+          created_at?: string;
+          id?: string;
+          qty: number;
+          return_id: string;
+          variant_id: string;
+        };
+        Update: {
+          cost_price?: number;
+          created_at?: string;
+          id?: string;
+          qty?: number;
+          return_id?: string;
+          variant_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "purchase_return_items_return_id_fkey";
+            columns: ["return_id"];
+            isOneToOne: false;
+            referencedRelation: "purchase_returns";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "purchase_return_items_variant_id_fkey";
+            columns: ["variant_id"];
+            isOneToOne: false;
+            referencedRelation: "product_variants";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "purchase_return_items_variant_id_fkey";
+            columns: ["variant_id"];
+            isOneToOne: false;
+            referencedRelation: "stock_overview";
+            referencedColumns: ["variant_id"];
+          },
+        ];
+      };
+      purchase_returns: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          reason: string;
+          return_no: string;
+          supplier_id: string;
+          total_refund: number;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          reason: string;
+          return_no: string;
+          supplier_id: string;
+          total_refund?: number;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          reason?: string;
+          return_no?: string;
+          supplier_id?: string;
+          total_refund?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "purchase_returns_supplier_id_fkey";
+            columns: ["supplier_id"];
+            isOneToOne: false;
+            referencedRelation: "suppliers";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      receivable_payments: {
+        Row: {
+          amount: number;
+          created_at: string;
+          created_by: string | null;
+          customer_id: string;
+          id: string;
+          note: string;
+          paid_at: string;
+          payment_method_id: string | null;
+          sale_id: string | null;
+        };
+        Insert: {
+          amount: number;
+          created_at?: string;
+          created_by?: string | null;
+          customer_id: string;
+          id?: string;
+          note?: string;
+          paid_at?: string;
+          payment_method_id?: string | null;
+          sale_id?: string | null;
+        };
+        Update: {
+          amount?: number;
+          created_at?: string;
+          created_by?: string | null;
+          customer_id?: string;
+          id?: string;
+          note?: string;
+          paid_at?: string;
+          payment_method_id?: string | null;
+          sale_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "receivable_payments_customer_id_fkey";
+            columns: ["customer_id"];
+            isOneToOne: false;
+            referencedRelation: "customers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "receivable_payments_payment_method_id_fkey";
+            columns: ["payment_method_id"];
+            isOneToOne: false;
+            referencedRelation: "payment_methods";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "receivable_payments_sale_id_fkey";
+            columns: ["sale_id"];
+            isOneToOne: false;
+            referencedRelation: "sales";
             referencedColumns: ["id"];
           },
         ];
@@ -588,6 +1092,7 @@ export type Database = {
           created_at: string;
           discount: number;
           id: string;
+          is_gift: boolean;
           product_name: string;
           qty: number;
           sale_id: string;
@@ -601,6 +1106,7 @@ export type Database = {
           created_at?: string;
           discount?: number;
           id?: string;
+          is_gift?: boolean;
           product_name: string;
           qty: number;
           sale_id: string;
@@ -614,6 +1120,7 @@ export type Database = {
           created_at?: string;
           discount?: number;
           id?: string;
+          is_gift?: boolean;
           product_name?: string;
           qty?: number;
           sale_id?: string;
@@ -789,6 +1296,7 @@ export type Database = {
           idempotency_key: string;
           invoice_no: string;
           paid_total: number;
+          promotion_id: string | null;
           rounding: number;
           service_fee: number;
           shift_id: string | null;
@@ -799,6 +1307,7 @@ export type Database = {
           user_id: string;
           void_reason: string | null;
           voided_by: string | null;
+          voucher_id: string | null;
         };
         Insert: {
           change_amount?: number;
@@ -810,6 +1319,7 @@ export type Database = {
           idempotency_key: string;
           invoice_no: string;
           paid_total?: number;
+          promotion_id?: string | null;
           rounding?: number;
           service_fee?: number;
           shift_id?: string | null;
@@ -820,6 +1330,7 @@ export type Database = {
           user_id: string;
           void_reason?: string | null;
           voided_by?: string | null;
+          voucher_id?: string | null;
         };
         Update: {
           change_amount?: number;
@@ -831,6 +1342,7 @@ export type Database = {
           idempotency_key?: string;
           invoice_no?: string;
           paid_total?: number;
+          promotion_id?: string | null;
           rounding?: number;
           service_fee?: number;
           shift_id?: string | null;
@@ -841,6 +1353,7 @@ export type Database = {
           user_id?: string;
           void_reason?: string | null;
           voided_by?: string | null;
+          voucher_id?: string | null;
         };
         Relationships: [
           {
@@ -851,10 +1364,24 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "sales_promotion_id_fkey";
+            columns: ["promotion_id"];
+            isOneToOne: false;
+            referencedRelation: "promotions";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "sales_shift_id_fkey";
             columns: ["shift_id"];
             isOneToOne: false;
             referencedRelation: "shifts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "sales_voucher_id_fkey";
+            columns: ["voucher_id"];
+            isOneToOne: false;
+            referencedRelation: "vouchers";
             referencedColumns: ["id"];
           },
         ];
@@ -1140,6 +1667,83 @@ export type Database = {
           },
         ];
       };
+      supplier_payments: {
+        Row: {
+          amount: number;
+          created_at: string;
+          created_by: string | null;
+          due_date: string | null;
+          id: string;
+          method: string;
+          note: string;
+          paid_at: string;
+          po_id: string;
+        };
+        Insert: {
+          amount: number;
+          created_at?: string;
+          created_by?: string | null;
+          due_date?: string | null;
+          id?: string;
+          method?: string;
+          note?: string;
+          paid_at?: string;
+          po_id: string;
+        };
+        Update: {
+          amount?: number;
+          created_at?: string;
+          created_by?: string | null;
+          due_date?: string | null;
+          id?: string;
+          method?: string;
+          note?: string;
+          paid_at?: string;
+          po_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "supplier_payments_po_id_fkey";
+            columns: ["po_id"];
+            isOneToOne: false;
+            referencedRelation: "purchase_orders";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      suppliers: {
+        Row: {
+          address: string;
+          created_at: string;
+          deleted_at: string | null;
+          id: string;
+          name: string;
+          payment_terms_days: number;
+          phone: string;
+          updated_at: string;
+        };
+        Insert: {
+          address?: string;
+          created_at?: string;
+          deleted_at?: string | null;
+          id?: string;
+          name: string;
+          payment_terms_days?: number;
+          phone?: string;
+          updated_at?: string;
+        };
+        Update: {
+          address?: string;
+          created_at?: string;
+          deleted_at?: string | null;
+          id?: string;
+          name?: string;
+          payment_terms_days?: number;
+          phone?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       units: {
         Row: {
           created_at: string;
@@ -1164,6 +1768,87 @@ export type Database = {
           name?: string;
           short_name?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      voucher_usages: {
+        Row: {
+          created_at: string;
+          discount_amount: number;
+          id: string;
+          sale_id: string;
+          voucher_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          discount_amount: number;
+          id?: string;
+          sale_id: string;
+          voucher_id: string;
+        };
+        Update: {
+          created_at?: string;
+          discount_amount?: number;
+          id?: string;
+          sale_id?: string;
+          voucher_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "voucher_usages_sale_id_fkey";
+            columns: ["sale_id"];
+            isOneToOne: true;
+            referencedRelation: "sales";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "voucher_usages_voucher_id_fkey";
+            columns: ["voucher_id"];
+            isOneToOne: false;
+            referencedRelation: "vouchers";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      vouchers: {
+        Row: {
+          code: string;
+          created_at: string;
+          expires_at: string | null;
+          id: string;
+          is_active: boolean;
+          min_purchase: number;
+          quota: number;
+          type: string;
+          updated_at: string;
+          used_count: number;
+          value: number;
+        };
+        Insert: {
+          code: string;
+          created_at?: string;
+          expires_at?: string | null;
+          id?: string;
+          is_active?: boolean;
+          min_purchase?: number;
+          quota?: number;
+          type: string;
+          updated_at?: string;
+          used_count?: number;
+          value: number;
+        };
+        Update: {
+          code?: string;
+          created_at?: string;
+          expires_at?: string | null;
+          id?: string;
+          is_active?: boolean;
+          min_purchase?: number;
+          quota?: number;
+          type?: string;
+          updated_at?: string;
+          used_count?: number;
+          value?: number;
         };
         Relationships: [];
       };
@@ -1203,16 +1888,32 @@ export type Database = {
       };
     };
     Functions: {
+      adjust_loyalty_points: {
+        Args: { p_customer_id: string; p_note: string; p_points: number };
+        Returns: Json;
+      };
       adjust_stock: {
         Args: { p_new_qty: number; p_reason: string; p_variant_id: string };
         Returns: Json;
       };
       approve_stock_opname: { Args: { p_opname_id: string }; Returns: Json };
       build_sale_receipt: { Args: { p_sale_id: string }; Returns: Json };
+      cash_flow_report: {
+        Args: { p_from: string; p_to: string };
+        Returns: {
+          entries: number;
+          flow_direction: string;
+          flow_label: string;
+          flow_source: string;
+          total: number;
+        }[];
+      };
       close_shift: {
         Args: { p_closing_cash: number; p_note?: string; p_shift_id: string };
         Returns: Json;
       };
+      create_purchase_order: { Args: { p_payload: Json }; Returns: Json };
+      create_purchase_return: { Args: { p_payload: Json }; Returns: Json };
       create_return: {
         Args: {
           p_items: Json;
@@ -1233,6 +1934,19 @@ export type Database = {
           transactions: number;
         }[];
       };
+      expense_summary: {
+        Args: { p_from: string; p_to: string };
+        Returns: {
+          category_id: string;
+          category_name: string;
+          entries: number;
+          total: number;
+        }[];
+      };
+      get_setting_number: {
+        Args: { p_default: number; p_key: string };
+        Returns: number;
+      };
       has_permission: { Args: { p_code: string }; Returns: boolean };
       hold_sale: { Args: { p_payload: Json }; Returns: Json };
       monthly_sales_summary: {
@@ -1247,9 +1961,79 @@ export type Database = {
       };
       next_number: { Args: { p_name: string }; Returns: number };
       open_shift: { Args: { p_opening_cash: number }; Returns: Json };
+      profit_by_period: {
+        Args: { p_from: string; p_granularity?: string; p_to: string };
+        Returns: {
+          cogs: number;
+          expense_total: number;
+          net_profit: number;
+          net_sales: number;
+          period_start: string;
+        }[];
+      };
+      profit_by_product: {
+        Args: {
+          p_category_id?: string;
+          p_from: string;
+          p_sort?: string;
+          p_to: string;
+        };
+        Returns: {
+          cogs: number;
+          margin_percent: number;
+          product_id: string;
+          product_name: string;
+          profit: number;
+          qty_sold: number;
+          revenue: number;
+        }[];
+      };
+      profit_loss_monthly: {
+        Args: { p_from: string; p_to: string };
+        Returns: {
+          cogs: number;
+          expense_total: number;
+          month_start: string;
+          net_profit: number;
+          net_sales: number;
+        }[];
+      };
+      profit_loss_report: {
+        Args: { p_from: string; p_to: string };
+        Returns: {
+          cogs: number;
+          discount_total: number;
+          expense_total: number;
+          gross_profit: number;
+          gross_sales: number;
+          net_profit: number;
+          net_sales: number;
+        }[];
+      };
+      receive_goods: { Args: { p_payload: Json }; Returns: Json };
+      record_receivable_payment: { Args: { p_payload: Json }; Returns: Json };
       resume_sale: {
         Args: { p_discard?: boolean; p_sale_id: string };
         Returns: Json;
+      };
+      sales_by_cashier: {
+        Args: { p_from: string; p_to: string };
+        Returns: {
+          avg_per_transaction: number;
+          cashier_name: string;
+          revenue: number;
+          transactions: number;
+          user_id: string;
+        }[];
+      };
+      sales_by_category: {
+        Args: { p_from: string; p_to: string };
+        Returns: {
+          category_id: string;
+          category_name: string;
+          qty_sold: number;
+          revenue: number;
+        }[];
       };
       sales_by_date_range: {
         Args: { p_from: string; p_to: string };
@@ -1261,7 +2045,50 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      sales_by_payment_method: {
+        Args: { p_from: string; p_to: string };
+        Returns: {
+          method_name: string;
+          method_type: string;
+          total: number;
+          transactions: number;
+        }[];
+      };
+      sales_by_product: {
+        Args: { p_category_id?: string; p_from: string; p_to: string };
+        Returns: {
+          avg_price: number;
+          product_id: string;
+          product_name: string;
+          qty_sold: number;
+          revenue: number;
+          sku: string;
+          variant_id: string;
+          variant_name: string;
+        }[];
+      };
       shift_summary: { Args: { p_shift_id: string }; Returns: Json };
+      stock_valuation: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          cost_price: number;
+          product_name: string;
+          qty: number;
+          sku: string;
+          stock_value: number;
+          variant_id: string;
+          variant_name: string;
+        }[];
+      };
+      top_products: {
+        Args: { p_from: string; p_limit?: number; p_to: string };
+        Returns: {
+          product_id: string;
+          product_name: string;
+          qty_sold: number;
+          revenue: number;
+        }[];
+      };
       void_sale: {
         Args: { p_reason: string; p_sale_id: string };
         Returns: Json;

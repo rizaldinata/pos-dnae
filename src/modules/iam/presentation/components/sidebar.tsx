@@ -8,13 +8,17 @@ import {
   Package,
   Boxes,
   Users,
+  ShoppingCart,
+  Ticket,
   BarChart3,
   Settings,
   Menu,
   X,
   LogOut,
+  Wallet,
 } from "lucide-react";
 import { logoutAction } from "@/modules/iam/presentation/actions/auth.action";
+import { SwitchCashierButton } from "@/modules/iam/presentation/components/switch-cashier-button";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { cn } from "@/shared/lib/utils";
@@ -24,6 +28,7 @@ export interface SidebarUser {
   roleName: string;
   permissions: string[];
   lowStockCount?: number;
+  expiringCount?: number;
 }
 
 interface MenuItem {
@@ -65,12 +70,36 @@ const MENU_ITEMS: MenuItem[] = [
     available: true,
   },
   {
+    href: "/pembelian/po",
+    label: "Pembelian",
+    icon: ShoppingCart,
+    requiredPermissions: ["purchasing.manage"],
+    available: true,
+    activePrefixes: ["/pembelian"],
+  },
+  {
+    href: "/promo",
+    label: "Promo",
+    icon: Ticket,
+    requiredPermissions: ["promo.manage"],
+    available: true,
+    activePrefixes: ["/promo"],
+  },
+  {
     href: "/laporan/penjualan",
     label: "Laporan",
     icon: BarChart3,
     requiredPermissions: ["report.view"],
     available: true,
     activePrefixes: ["/laporan"],
+  },
+  {
+    href: "/keuangan",
+    label: "Keuangan",
+    icon: Wallet,
+    requiredPermissions: ["finance.manage", "report.view"],
+    available: true,
+    activePrefixes: ["/keuangan"],
   },
   {
     href: "/pengaturan/toko",
@@ -158,6 +187,14 @@ export function Sidebar({ user }: { user: SidebarUser }) {
                         {user.lowStockCount}
                       </Badge>
                     )}
+                    {item.href === "/stok" && (user.expiringCount ?? 0) > 0 && (
+                      <Badge
+                        className="bg-amber-500/15 text-amber-600 hover:bg-amber-500/15 dark:text-amber-400"
+                        title="Batch mendekati / sudah kedaluwarsa"
+                      >
+                        {user.expiringCount}
+                      </Badge>
+                    )}
                   </Link>
                 ) : (
                   <span className="flex min-h-11 cursor-not-allowed items-center gap-3 rounded-md px-3 text-sm font-medium text-muted-foreground">
@@ -172,17 +209,20 @@ export function Sidebar({ user }: { user: SidebarUser }) {
       <div className="border-t p-3">
         <p className="truncate px-1 text-sm font-medium">{user.fullName}</p>
         <p className="px-1 text-xs text-muted-foreground">{user.roleName}</p>
-        <form action={logoutAction} className="mt-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            type="submit"
-            className="w-full justify-start"
-          >
-            <LogOut className="size-4" />
-            Keluar
-          </Button>
-        </form>
+        <div className="mt-1 flex flex-col gap-1">
+          <SwitchCashierButton />
+          <form action={logoutAction}>
+            <Button
+              variant="ghost"
+              size="sm"
+              type="submit"
+              className="w-full justify-start"
+            >
+              <LogOut className="size-4" />
+              Keluar
+            </Button>
+          </form>
+        </div>
       </div>
     </div>
   );

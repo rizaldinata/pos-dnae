@@ -34,6 +34,11 @@ describe("LoginUseCase", () => {
       findAll: async () => ok([]),
       create: async () => err(new InvariantViolationError("not used")),
       update: async () => err(new InvariantViolationError("not used")),
+      setPinHash: async () => ok(undefined),
+      recordPinFailure: async () => ok({ attempts: 0, lockedUntil: null }),
+      resetPinAttempts: async () => ok(undefined),
+      getPinStatus: async () =>
+        ok({ pinSet: false, attempts: 0, lockedUntil: null, isActive: true }),
     };
     let signedOut = false;
     const authService: IAuthService = {
@@ -46,6 +51,8 @@ describe("LoginUseCase", () => {
         return ok(undefined);
       },
       getCurrentIdentity: async () => ok(null),
+      signInWithPin: async () => err(new InvariantViolationError("not used")),
+      listPinUsers: async () => ok([]),
     };
     return {
       useCase: new LoginUseCase(userRepository, authService),

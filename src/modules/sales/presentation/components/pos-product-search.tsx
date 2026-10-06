@@ -177,9 +177,24 @@ export function POSProductSearch({
               onClick={() => !outOfStock && handlePickProduct(product)}
             >
               <CardContent className="flex flex-col gap-1 p-3">
-                <p className="text-sm font-medium leading-tight">
-                  {product.name}
-                </p>
+                <div className="flex items-start gap-2">
+                  {product.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={product.imageUrl}
+                      alt={product.name}
+                      className="h-10 w-10 shrink-0 rounded-md border object-cover"
+                    />
+                  ) : null}
+                  <p className="text-sm font-medium leading-tight">
+                    {product.name}
+                    {product.variants.some((v) => v.isBundle) && (
+                      <Badge variant="outline" className="ml-2 align-middle">
+                        Bundle
+                      </Badge>
+                    )}
+                  </p>
+                </div>
                 {product.variants.length > 1 && (
                   <p className="text-xs text-muted-foreground">
                     {product.variants.length} varian

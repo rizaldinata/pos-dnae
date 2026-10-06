@@ -10,7 +10,9 @@ interface RouteRule {
 // /pengaturan/users khusus Owner; /pengaturan umum Owner + Admin.
 const ROUTE_RULES: RouteRule[] = [
   { prefix: "/pengaturan/users", roles: ["Owner"] },
+  { prefix: "/pengaturan/roles", roles: ["Owner"] },
   { prefix: "/pengaturan", roles: ["Owner", "Admin"] },
+  { prefix: "/pembelian", roles: ["Owner", "Admin"] },
   { prefix: "/pelanggan", roles: ["Owner", "Admin", "Manajer"] },
   { prefix: "/produk", roles: ["Owner", "Admin"] },
   { prefix: "/stok", roles: ["Owner", "Admin", "Manajer"] },

@@ -32,7 +32,11 @@ export default async function StoreSettingsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <SettingsNav showUsers={guard.user.hasPermission("user.manage")} />
+      <SettingsNav
+        showUsers={guard.user.hasPermission("user.manage")}
+        showAudit={guard.user.hasPermission("audit.view")}
+        showRoles={guard.user.hasPermission("role.manage")}
+      />
       <div>
         <h1 className="text-2xl font-semibold">Pengaturan Toko</h1>
         <p className="text-sm text-muted-foreground">

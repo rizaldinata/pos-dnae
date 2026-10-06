@@ -43,7 +43,14 @@ export default async function CustomersPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <CustomerSearch initialQuery={query} />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex-1">
+          <CustomerSearch initialQuery={query} />
+        </div>
+        <Button variant="outline" asChild className="min-h-11">
+          <Link href="/pelanggan/piutang">Piutang</Link>
+        </Button>
+      </div>
       <CustomerManagement
         customers={items.map((c) => ({
           id: c.id,

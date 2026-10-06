@@ -24,6 +24,7 @@ export interface ReceiptPaymentDTO {
 export interface ReceiptDTO {
   saleId: string;
   invoiceNo: string;
+  status: string;
   createdAt: string;
   cashierName: string;
   subtotal: number;
@@ -42,6 +43,7 @@ export interface CheckoutActionState {
 }
 
 export interface CheckoutFormInput {
+  isCredit?: boolean;
   items: {
     variantId: string;
     qty: number;
@@ -49,6 +51,9 @@ export interface CheckoutFormInput {
   }[];
   customerId?: string | null;
   transactionDiscount?: { kind: "percent" | "amount"; value: number };
+  voucherCode?: string | null;
+  /** Jumlah poin yang ditukar (POS-14); nilai rupiah dihitung server. */
+  redeemPoints?: number;
   payments: {
     paymentMethodId: string;
     amount: number;
@@ -69,8 +74,11 @@ export async function checkoutAction(
   const result = await container.sales.checkout.execute(
     { userId: guard.user.id, idempotencyKey: input.idempotencyKey },
     {
+      isCredit: input.isCredit ?? false,
       items: input.items,
       transactionDiscount: input.transactionDiscount,
+      voucherCode: input.voucherCode ?? null,
+      redeemPoints: input.redeemPoints ?? 0,
       payments: input.payments,
       customerId: input.customerId ?? null,
     }
@@ -89,6 +97,7 @@ export async function checkoutAction(
     receipt: {
       saleId: sale.id,
       invoiceNo: sale.invoiceNo,
+      status: sale.status,
       createdAt: sale.createdAt.toISOString(),
       cashierName: guard.user.fullName,
       subtotal: sale.subtotal.amount,

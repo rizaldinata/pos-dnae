@@ -89,7 +89,9 @@ INSERT INTO public.settings (key, value) VALUES
   ('tax.rate', '0'),
   ('tax.mode', '"exclusive"'),
   ('service_fee.rate', '0'),
-  ('stock.allow_negative', 'false')
+  ('stock.allow_negative', 'false'),
+  ('loyalty.earn_ratio', '10000'),
+  ('loyalty.point_value', '100')
 ON CONFLICT (key) DO NOTHING;
 
 -- ============ CATEGORIES ============
@@ -100,6 +102,15 @@ INSERT INTO public.categories (id, parent_id, name) VALUES
   ('c0000000-0000-4000-8000-000000000004', NULL, 'Kebersihan'),
   ('c0000000-0000-4000-8000-000000000005', 'c0000000-0000-4000-8000-000000000001', 'Bumbu Dapur')
 ON CONFLICT (id) DO NOTHING;
+
+-- ============ EXPENSE CATEGORIES (Sub-PRD 3.5) ============
+INSERT INTO public.expense_categories (name) VALUES
+  ('Listrik & Air'),
+  ('Sewa'),
+  ('Gaji'),
+  ('Operasional'),
+  ('Lain-lain')
+ON CONFLICT (name) DO NOTHING;
 
 -- ============ BRANDS ============
 INSERT INTO public.brands (id, name) VALUES

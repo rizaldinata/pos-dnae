@@ -97,4 +97,18 @@ body {
     max-width: 100%;
     margin: 0 auto;
   }
+  /* Label barcode (PRD-07): saat cetak, hanya area label yang terlihat. */
+  .label-print-area,
+  .label-print-area * {
+    visibility: visible;
+  }
+  .label-print-area {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2mm;
+  }
 }

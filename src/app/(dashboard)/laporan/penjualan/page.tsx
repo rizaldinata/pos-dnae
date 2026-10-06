@@ -16,6 +16,7 @@ import {
 } from "@/shared/ui/table";
 import { SalesChart } from "@/modules/reporting/presentation/components/sales-chart";
 import { ReportFilters } from "@/modules/reporting/presentation/components/report-filters";
+import { ExportButtons } from "@/modules/reporting/presentation/components/export-buttons";
 import { formatRupiah } from "@/shared/lib/format-rupiah";
 import { formatDateTimeJakarta, toISODateJakarta } from "@/shared/lib/date";
 
@@ -128,12 +129,41 @@ export default async function SalesReportPage({
             Periode: {report.label}
           </p>
         </div>
-        <Button variant="outline" asChild className="min-h-11">
-          <Link href="/laporan/shift">Rekap Shift</Link>
-        </Button>
-        <Button variant="outline" asChild className="min-h-11">
-          <Link href="/laporan/retur">Riwayat Retur</Link>
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" asChild className="min-h-11">
+            <Link href="/laporan/shift">Rekap Shift</Link>
+          </Button>
+          <Button variant="outline" asChild className="min-h-11">
+            <Link href="/laporan/retur">Riwayat Retur</Link>
+          </Button>
+          <Button variant="outline" asChild className="min-h-11">
+            <Link href="/laporan/produk">Produk</Link>
+          </Button>
+          <Button variant="outline" asChild className="min-h-11">
+            <Link href="/laporan/kasir">Kasir</Link>
+          </Button>
+          <Button variant="outline" asChild className="min-h-11">
+            <Link href="/laporan/pembayaran">Metode</Link>
+          </Button>
+          <Button variant="outline" asChild className="min-h-11">
+            <Link href="/laporan/stok">Stok</Link>
+          </Button>
+          <Button variant="outline" asChild className="min-h-11">
+            <Link href="/laporan/laba/periode">Laba</Link>
+          </Button>
+          <ExportButtons
+            type="penjualan"
+            pdf
+            query={{
+              mode,
+              date,
+              from: dateFrom,
+              to: dateTo,
+              year,
+              month,
+            }}
+          />
+        </div>
       </div>
 
       <ReportFilters

@@ -18,6 +18,7 @@ const initialState: SettingsActionState = { success: false, message: null };
 const SAMPLE_RECEIPT: ReceiptDTO = {
   saleId: "sample",
   invoiceNo: "INV-20261005-0001",
+  status: "completed",
   createdAt: new Date().toISOString(),
   cashierName: "Kasir",
   subtotal: 10000,

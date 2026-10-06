@@ -25,7 +25,11 @@ export default async function PaymentMethodsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <SettingsNav showUsers={guard.user.hasPermission("user.manage")} />
+      <SettingsNav
+        showUsers={guard.user.hasPermission("user.manage")}
+        showAudit={guard.user.hasPermission("audit.view")}
+        showRoles={guard.user.hasPermission("role.manage")}
+      />
       <PaymentMethodManagement
         methods={result.data.map((m) => ({
           id: m.id,
