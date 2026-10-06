@@ -10,6 +10,7 @@ import {
   YAxis,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { chartTooltipStyle } from "@/shared/ui/chart-theme";
 
 export interface MovementPoint {
   id: string;
@@ -46,6 +47,7 @@ export function StockMovementChart({ points }: { points: MovementPoint[] }) {
               />
               <YAxis tick={{ fontSize: 11 }} />
               <Tooltip
+                contentStyle={chartTooltipStyle}
                 formatter={(value) => [value, "Saldo"]}
                 labelFormatter={(_, payload) =>
                   payload?.[0]?.payload

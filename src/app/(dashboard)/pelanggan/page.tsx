@@ -10,7 +10,7 @@ import { CustomerSearch } from "@/modules/customers/presentation/components/cust
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Pelanggan — POS DNAE",
+  title: "Pelanggan",
 };
 
 const PAGE_SIZE = 20;

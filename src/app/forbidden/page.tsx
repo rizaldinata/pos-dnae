@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Button } from "@/shared/ui/button";
 
 export const metadata = {
-  title: "Akses Ditolak — POS DNAE",
+  title: "Akses Ditolak",
 };
 
 export default function ForbiddenPage() {

@@ -7,7 +7,7 @@ import { OpnameDetail } from "@/modules/inventory/presentation/components/opname
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Detail Opname — POS DNAE",
+  title: "Detail Opname",
 };
 
 export default async function OpnameDetailPage({

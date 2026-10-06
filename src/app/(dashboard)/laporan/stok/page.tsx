@@ -17,7 +17,7 @@ import { ExportButtons } from "@/modules/reporting/presentation/components/expor
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Laporan Stok — POS DNAE",
+  title: "Laporan Stok",
 };
 
 export default async function StockReportPage() {

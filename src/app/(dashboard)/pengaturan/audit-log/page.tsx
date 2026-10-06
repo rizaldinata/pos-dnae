@@ -18,7 +18,7 @@ import { formatDateTimeJakarta } from "@/shared/lib/date";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Audit Log — POS DNAE",
+  title: "Audit Log",
 };
 
 const PAGE_SIZE = 20;

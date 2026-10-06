@@ -8,7 +8,7 @@ import { listSuppliersAction } from "@/modules/purchasing/presentation/actions/p
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Retur Supplier — POS DNAE",
+  title: "Retur Supplier",
 };
 
 export default async function PurchaseReturnPage() {

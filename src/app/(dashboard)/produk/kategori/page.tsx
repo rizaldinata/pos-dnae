@@ -7,7 +7,7 @@ import { CategoryManagement } from "@/modules/catalog/presentation/components/ca
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Kategori — POS DNAE",
+  title: "Kategori",
 };
 
 export default async function CategoriesPage() {

@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { formatRupiah } from "@/shared/lib/format-rupiah";
+import { chartTooltipStyle } from "@/shared/ui/chart-theme";
 import type { ProductProfitRow } from "@/modules/reporting/domain/entities/advanced-report";
 
 /** Top 10 produk paling menguntungkan (RPT-05), batang horizontal. */
@@ -54,6 +55,7 @@ export function ProductProfitChart({ rows }: { rows: ProductProfitRow[] }) {
                 tick={{ fontSize: 11 }}
               />
               <Tooltip
+                contentStyle={chartTooltipStyle}
                 formatter={(value) => [
                   formatRupiah(Number(value ?? 0)),
                   "Laba",

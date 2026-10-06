@@ -5,7 +5,7 @@ import { ReceivableManagement } from "@/modules/customers/presentation/component
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Piutang — POS DNAE",
+  title: "Piutang",
 };
 
 export default async function ReceivablesPage() {

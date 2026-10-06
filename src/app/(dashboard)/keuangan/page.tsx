@@ -4,7 +4,7 @@ import { requirePermission } from "@/modules/iam/presentation/actions/require-pe
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Keuangan — POS DNAE",
+  title: "Keuangan",
 };
 
 /** Pintasan /keuangan: arahkan pengguna ke halaman yang boleh dia lihat. */

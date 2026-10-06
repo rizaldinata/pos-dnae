@@ -8,7 +8,7 @@ import { InventorySettingsForm } from "@/modules/settings/presentation/component
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Pengaturan Inventori — POS DNAE",
+  title: "Pengaturan Inventori",
 };
 
 export default async function InventorySettingsPage() {

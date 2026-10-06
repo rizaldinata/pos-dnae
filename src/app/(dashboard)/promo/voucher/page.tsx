@@ -9,7 +9,7 @@ import { VoucherManagement } from "@/modules/promotions/presentation/components/
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Voucher — POS DNAE",
+  title: "Voucher",
 };
 
 export default async function VouchersPage() {

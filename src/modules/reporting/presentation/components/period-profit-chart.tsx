@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { formatRupiah } from "@/shared/lib/format-rupiah";
+import { chartTooltipStyle } from "@/shared/ui/chart-theme";
 import { formatDateJakarta } from "@/shared/lib/date";
 import type {
   PeriodProfitRow,
@@ -72,6 +73,7 @@ export function PeriodProfitChart({
                 }
               />
               <Tooltip
+                contentStyle={chartTooltipStyle}
                 formatter={(value, name) => [
                   formatRupiah(Number(value ?? 0)),
                   name === "netSales"

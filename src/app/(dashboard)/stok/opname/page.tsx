@@ -18,7 +18,7 @@ import { formatDateTimeJakarta } from "@/shared/lib/date";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Stock Opname — POS DNAE",
+  title: "Stock Opname",
 };
 
 export default async function OpnameListPage() {

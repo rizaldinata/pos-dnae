@@ -7,7 +7,7 @@ import { getCurrentShiftAction } from "@/modules/shifts/presentation/actions/shi
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Kasir — POS DNAE",
+  title: "Kasir",
 };
 
 export default async function KasirPage() {

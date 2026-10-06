@@ -23,7 +23,7 @@ import { toISODateJakarta } from "@/shared/lib/date";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Kartu Stok — POS DNAE",
+  title: "Kartu Stok",
 };
 
 const PAGE_SIZE = 20;

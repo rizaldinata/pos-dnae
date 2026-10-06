@@ -621,6 +621,13 @@ export type Database = {
             referencedRelation: "products";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "product_variants_product_id_fkey";
+            columns: ["product_id"];
+            isOneToOne: false;
+            referencedRelation: "stock_overview";
+            referencedColumns: ["product_id"];
+          },
         ];
       };
       products: {
@@ -1871,13 +1878,6 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: "product_variants_product_id_fkey";
-            columns: ["product_id"];
-            isOneToOne: false;
-            referencedRelation: "products";
-            referencedColumns: ["id"];
-          },
-          {
             foreignKeyName: "products_category_id_fkey";
             columns: ["category_id"];
             isOneToOne: false;
@@ -1911,6 +1911,18 @@ export type Database = {
       close_shift: {
         Args: { p_closing_cash: number; p_note?: string; p_shift_id: string };
         Returns: Json;
+      };
+      consume_stock: {
+        Args: {
+          p_movement_type: string;
+          p_note: string;
+          p_qty: number;
+          p_ref_id: string;
+          p_ref_type: string;
+          p_user_id: string;
+          p_variant_id: string;
+        };
+        Returns: undefined;
       };
       create_purchase_order: { Args: { p_payload: Json }; Returns: Json };
       create_purchase_return: { Args: { p_payload: Json }; Returns: Json };
@@ -2012,6 +2024,19 @@ export type Database = {
       };
       receive_goods: { Args: { p_payload: Json }; Returns: Json };
       record_receivable_payment: { Args: { p_payload: Json }; Returns: Json };
+      restore_sale_stock: {
+        Args: {
+          p_movement_type: string;
+          p_note: string;
+          p_qty: number;
+          p_ref_id: string;
+          p_ref_type: string;
+          p_sale_id: string;
+          p_user_id: string;
+          p_variant_id: string;
+        };
+        Returns: undefined;
+      };
       resume_sale: {
         Args: { p_discard?: boolean; p_sale_id: string };
         Returns: Json;

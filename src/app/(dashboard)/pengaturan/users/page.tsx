@@ -5,7 +5,7 @@ import { UserManagement } from "@/modules/iam/presentation/components/user-manag
 import { SettingsNav } from "@/modules/settings/presentation/components/settings-nav";
 
 export const metadata = {
-  title: "Pengguna — POS DNAE",
+  title: "Pengguna",
 };
 
 export default async function UsersPage() {

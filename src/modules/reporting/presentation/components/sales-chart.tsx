@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { formatRupiah } from "@/shared/lib/format-rupiah";
+import { chartTooltipStyle } from "@/shared/ui/chart-theme";
 
 export interface SalesChartPoint {
   day: string;
@@ -50,6 +51,7 @@ export function SalesChart({ data }: { data: SalesChartPoint[] }) {
                 }
               />
               <Tooltip
+                contentStyle={chartTooltipStyle}
                 formatter={(value, name) => [
                   name === "netSales"
                     ? formatRupiah(Number(value ?? 0))

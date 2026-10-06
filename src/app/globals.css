@@ -21,6 +21,14 @@
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
   --radius: 0.625rem;
+
+  /* Sidebar — palet diambil dari logo: marun #981818 + perak. */
+  --sidebar: #fbf7f7;
+  --sidebar-foreground: #3f3737;
+  --sidebar-hover: #f2e3e3;
+  --sidebar-accent: #981818;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #ecdede;
 }
 
 .dark {
@@ -43,6 +51,14 @@
   --border: oklch(0.269 0 0);
   --input: oklch(0.269 0 0);
   --ring: oklch(0.439 0 0);
+
+  /* Sidebar gelap — charcoal nuansa marun + teks perak (senada logo). */
+  --sidebar: #171212;
+  --sidebar-foreground: #e9e5e5;
+  --sidebar-hover: #2a1d1d;
+  --sidebar-accent: #981818;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #2e2323;
 }
 
 @theme inline {
@@ -65,6 +81,12 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-hover: var(--sidebar-hover);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -79,6 +101,15 @@ body {
   font-feature-settings:
     "rlig" 1,
     "calt" 1;
+}
+
+/* Mode gelap: teks sumbu & garis grid Recharts ikut token tema.
+   (Bawaan Recharts abu #666/#ccc nyaris tak terlihat di latar gelap.) */
+.dark .recharts-text {
+  fill: var(--muted-foreground);
+}
+.dark .recharts-cartesian-grid line {
+  stroke: var(--border);
 }
 
 /* Struk thermal: saat cetak, hanya area struk yang terlihat (58/80mm). */

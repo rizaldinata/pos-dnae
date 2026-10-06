@@ -8,7 +8,7 @@ import { LoyaltySettingsForm } from "@/modules/settings/presentation/components/
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Pengaturan Loyalitas — POS DNAE",
+  title: "Pengaturan Loyalitas",
 };
 
 export default async function LoyaltySettingsPage() {

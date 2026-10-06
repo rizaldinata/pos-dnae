@@ -8,7 +8,7 @@ import { PaymentMethodManagement } from "@/modules/settings/presentation/compone
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Metode Pembayaran — POS DNAE",
+  title: "Metode Pembayaran",
 };
 
 export default async function PaymentMethodsPage() {

@@ -6,7 +6,7 @@ import { POForm } from "@/modules/purchasing/presentation/components/po-form";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Buat PO — POS DNAE",
+  title: "Buat PO",
 };
 
 export default async function NewPOPage() {

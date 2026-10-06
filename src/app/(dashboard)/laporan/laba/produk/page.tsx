@@ -23,7 +23,7 @@ import { Button } from "@/shared/ui/button";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Laba Per Produk — POS DNAE",
+  title: "Laba Per Produk",
 };
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;

@@ -2,7 +2,7 @@ import { LoginForm } from "@/modules/iam/presentation/components/login-form";
 import { PinLoginSection } from "@/modules/iam/presentation/components/pin-login-section";
 
 export const metadata = {
-  title: "Masuk — POS DNAE",
+  title: "Masuk",
 };
 
 export default async function LoginPage({

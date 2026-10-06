@@ -20,7 +20,7 @@ import { ExportButtons } from "@/modules/reporting/presentation/components/expor
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Rekap Shift — POS DNAE",
+  title: "Rekap Shift",
 };
 
 const PAGE_SIZE = 20;

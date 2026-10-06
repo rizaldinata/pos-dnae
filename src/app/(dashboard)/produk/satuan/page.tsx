@@ -12,7 +12,7 @@ import {
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Satuan — POS DNAE",
+  title: "Satuan",
 };
 
 export default async function UnitsPage() {

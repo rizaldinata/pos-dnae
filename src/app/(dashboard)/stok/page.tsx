@@ -21,7 +21,7 @@ import type { StockStatus } from "@/modules/inventory/domain/services/stock-poli
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Stok — POS DNAE",
+  title: "Stok",
 };
 
 const PAGE_SIZE = 20;

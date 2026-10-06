@@ -13,7 +13,7 @@ import { Badge } from "@/shared/ui/badge";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Detail Transaksi — POS DNAE",
+  title: "Detail Transaksi",
 };
 
 export default async function TransactionDetailPage({

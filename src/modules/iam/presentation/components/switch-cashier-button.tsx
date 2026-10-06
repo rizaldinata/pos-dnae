@@ -43,7 +43,7 @@ export function SwitchCashierButton() {
         variant="ghost"
         size="sm"
         onClick={() => setOpen(true)}
-        className="w-full justify-start"
+        className="w-full justify-start hover:bg-sidebar-hover"
       >
         <RefreshCw className="size-4" />
         Ganti kasir (PIN)

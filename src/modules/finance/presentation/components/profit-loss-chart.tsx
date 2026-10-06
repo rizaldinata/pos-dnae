@@ -12,6 +12,7 @@ import {
 import type { MonthlyProfitRow } from "@/modules/finance/domain/entities/finance-report";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { formatRupiah } from "@/shared/lib/format-rupiah";
+import { chartTooltipStyle } from "@/shared/ui/chart-theme";
 
 const MONTH_LABELS = [
   "Jan",
@@ -66,6 +67,7 @@ export function ProfitLossChart({ data }: { data: MonthlyProfitRow[] }) {
                 }
               />
               <Tooltip
+                contentStyle={chartTooltipStyle}
                 formatter={(value) => [
                   formatRupiah(Number(value ?? 0)),
                   "Laba bersih",

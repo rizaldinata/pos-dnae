@@ -9,7 +9,7 @@ import { PromotionManagement } from "@/modules/promotions/presentation/component
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Promo — POS DNAE",
+  title: "Promo",
 };
 
 export default async function PromotionsPage() {

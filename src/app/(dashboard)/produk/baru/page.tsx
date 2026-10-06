@@ -7,7 +7,7 @@ import { ProductForm } from "@/modules/catalog/presentation/components/product-f
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Tambah Produk — POS DNAE",
+  title: "Tambah Produk",
 };
 
 export default async function NewProductPage() {

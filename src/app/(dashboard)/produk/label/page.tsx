@@ -5,7 +5,7 @@ import { LabelPrinter } from "@/modules/catalog/presentation/components/label-pr
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Cetak Label Barcode — POS DNAE",
+  title: "Cetak Label Barcode",
 };
 
 export default async function LabelPrintPage() {

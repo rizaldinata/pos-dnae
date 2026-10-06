@@ -18,7 +18,7 @@ import { ExportButtons } from "@/modules/reporting/presentation/components/expor
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Riwayat Retur — POS DNAE",
+  title: "Riwayat Retur",
 };
 
 const PAGE_SIZE = 20;

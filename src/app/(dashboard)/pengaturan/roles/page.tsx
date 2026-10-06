@@ -7,7 +7,7 @@ import { listRolesAction } from "@/modules/iam/presentation/actions/role.action"
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Role & Permission — POS DNAE",
+  title: "Role & Permission",
 };
 
 export default async function RolesPage() {

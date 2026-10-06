@@ -12,7 +12,7 @@ import {
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Brand — POS DNAE",
+  title: "Brand",
 };
 
 export default async function BrandsPage() {

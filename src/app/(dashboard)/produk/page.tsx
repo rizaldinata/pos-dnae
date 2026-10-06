@@ -21,7 +21,7 @@ import { formatRupiah } from "@/shared/lib/format-rupiah";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Produk — POS DNAE",
+  title: "Produk",
 };
 
 const PAGE_SIZE = 20;

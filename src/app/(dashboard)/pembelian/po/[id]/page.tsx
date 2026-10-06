@@ -21,7 +21,7 @@ import { formatRupiah } from "@/shared/lib/format-rupiah";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Detail PO — POS DNAE",
+  title: "Detail PO",
 };
 
 const STATUS_LABEL: Record<string, string> = {

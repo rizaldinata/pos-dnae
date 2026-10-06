@@ -7,7 +7,7 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Impor Produk — POS DNAE",
+  title: "Impor Produk",
 };
 
 export default async function ProductImportPage() {

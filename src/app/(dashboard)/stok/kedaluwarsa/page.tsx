@@ -17,7 +17,7 @@ import {
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Kedaluwarsa — POS DNAE",
+  title: "Kedaluwarsa",
 };
 
 const PAGE_SIZE = 20;

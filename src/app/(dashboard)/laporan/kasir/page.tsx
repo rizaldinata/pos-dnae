@@ -19,7 +19,7 @@ import { toISODateJakarta } from "@/shared/lib/date";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Laporan Kasir — POS DNAE",
+  title: "Laporan Kasir",
 };
 
 function addDays(iso: string, days: number): string {

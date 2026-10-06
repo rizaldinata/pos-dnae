@@ -13,7 +13,7 @@ import { isErr } from "@/shared/kernel/result";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Pengeluaran — POS DNAE",
+  title: "Pengeluaran",
 };
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;

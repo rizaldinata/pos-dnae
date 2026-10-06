@@ -21,7 +21,7 @@ import { formatDateTimeJakarta } from "@/shared/lib/date";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Detail Shift — POS DNAE",
+  title: "Detail Shift",
 };
 
 export default async function ShiftDetailPage({

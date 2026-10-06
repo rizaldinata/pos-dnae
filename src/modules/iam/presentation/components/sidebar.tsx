@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 import {
   Store,
   Package,
@@ -19,6 +20,7 @@ import {
 } from "lucide-react";
 import { logoutAction } from "@/modules/iam/presentation/actions/auth.action";
 import { SwitchCashierButton } from "@/modules/iam/presentation/components/switch-cashier-button";
+import { ThemeToggle } from "@/modules/iam/presentation/components/theme-toggle";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { cn } from "@/shared/lib/utils";
@@ -128,8 +130,15 @@ export function Sidebar({ user }: { user: SidebarUser }) {
 
   const nav = (
     <div className="flex h-full flex-col">
-      <div className="flex h-14 items-center border-b px-4">
-        <span className="text-base font-semibold">POS DNAE</span>
+      <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-4 text-sidebar-foreground">
+        <Image
+          src="/logo.png"
+          alt=""
+          width={28}
+          height={28}
+          className="size-7 shrink-0"
+        />
+        <span className="text-base font-semibold">DNA COMPANY</span>
       </div>
       <nav className="flex-1 overflow-y-auto p-2">
         <ul className="flex flex-col gap-1">
@@ -140,8 +149,8 @@ export function Sidebar({ user }: { user: SidebarUser }) {
               className={cn(
                 "flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-medium",
                 pathname === "/"
-                  ? "bg-accent text-accent-foreground"
-                  : "hover:bg-accent/60"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "hover:bg-sidebar-hover"
               )}
             >
               <Store className="size-4" />
@@ -162,7 +171,10 @@ export function Sidebar({ user }: { user: SidebarUser }) {
                 <Icon className="size-4" />
                 <span className="flex-1">{item.label}</span>
                 {!item.available && (
-                  <Badge variant="secondary" className="text-[10px]">
+                  <Badge
+                    variant="secondary"
+                    className="border-sidebar-border bg-sidebar-hover text-[10px] text-sidebar-foreground"
+                  >
                     Segera
                   </Badge>
                 )}
@@ -177,8 +189,8 @@ export function Sidebar({ user }: { user: SidebarUser }) {
                     className={cn(
                       "flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-medium",
                       active
-                        ? "bg-accent text-accent-foreground"
-                        : "hover:bg-accent/60"
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                        : "hover:bg-sidebar-hover"
                     )}
                   >
                     {content}
@@ -197,7 +209,7 @@ export function Sidebar({ user }: { user: SidebarUser }) {
                     )}
                   </Link>
                 ) : (
-                  <span className="flex min-h-11 cursor-not-allowed items-center gap-3 rounded-md px-3 text-sm font-medium text-muted-foreground">
+                  <span className="flex min-h-11 cursor-not-allowed items-center gap-3 rounded-md px-3 text-sm font-medium text-sidebar-foreground/60">
                     {content}
                   </span>
                 )}
@@ -206,17 +218,20 @@ export function Sidebar({ user }: { user: SidebarUser }) {
           })}
         </ul>
       </nav>
-      <div className="border-t p-3">
+      <div className="border-t border-sidebar-border p-3 text-sidebar-foreground">
         <p className="truncate px-1 text-sm font-medium">{user.fullName}</p>
-        <p className="px-1 text-xs text-muted-foreground">{user.roleName}</p>
+        <p className="px-1 text-xs text-sidebar-foreground/70">
+          {user.roleName}
+        </p>
         <div className="mt-1 flex flex-col gap-1">
+          <ThemeToggle className="hover:bg-sidebar-hover" />
           <SwitchCashierButton />
           <form action={logoutAction}>
             <Button
               variant="ghost"
               size="sm"
               type="submit"
-              className="w-full justify-start"
+              className="w-full justify-start hover:bg-sidebar-hover"
             >
               <LogOut className="size-4" />
               Keluar
@@ -229,18 +244,26 @@ export function Sidebar({ user }: { user: SidebarUser }) {
 
   return (
     <>
-      <div className="flex h-14 items-center gap-2 border-b px-4 lg:hidden">
+      <div className="flex h-14 items-center gap-2 border-b border-sidebar-border bg-sidebar px-4 text-sidebar-foreground lg:hidden">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setOpen(!open)}
           aria-label="Menu navigasi"
+          className="hover:bg-sidebar-hover"
         >
           {open ? <X className="size-5" /> : <Menu className="size-5" />}
         </Button>
-        <span className="text-base font-semibold">POS DNAE</span>
+        <Image
+          src="/logo.png"
+          alt=""
+          width={28}
+          height={28}
+          className="size-7 shrink-0"
+        />
+        <span className="text-base font-semibold">DNA COMPANY</span>
       </div>
-      <aside className="hidden w-60 shrink-0 border-r bg-background lg:block">
+      <aside className="hidden w-60 shrink-0 border-r border-sidebar-border bg-sidebar lg:block">
         {nav}
       </aside>
       {open && (
@@ -249,7 +272,7 @@ export function Sidebar({ user }: { user: SidebarUser }) {
             className="absolute inset-0 bg-black/50"
             onClick={() => setOpen(false)}
           />
-          <aside className="absolute inset-y-0 left-0 w-72 bg-background shadow-lg">
+          <aside className="absolute inset-y-0 left-0 w-72 bg-sidebar shadow-lg">
             {nav}
           </aside>
         </div>

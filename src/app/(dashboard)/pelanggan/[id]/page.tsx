@@ -21,7 +21,7 @@ import { LoyaltyHistory } from "@/modules/customers/presentation/components/loya
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Detail Pelanggan — POS DNAE",
+  title: "Detail Pelanggan",
 };
 
 export default async function CustomerDetailPage({

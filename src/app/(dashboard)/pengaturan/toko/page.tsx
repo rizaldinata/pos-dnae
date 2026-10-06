@@ -9,7 +9,7 @@ import { PricingSettingsForm } from "@/modules/settings/presentation/components/
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Pengaturan Toko — POS DNAE",
+  title: "Pengaturan Toko",
 };
 
 export default async function StoreSettingsPage() {

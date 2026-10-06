@@ -29,9 +29,9 @@ export async function generateMetadata({
   const container = await getAppContainer();
   const result = await container.catalog.getProduct.execute(id);
   if (isErr(result)) {
-    return { title: "Produk — POS DNAE" };
+    return { title: "Produk" };
   }
-  return { title: `${result.data.name} — POS DNAE` };
+  return { title: `${result.data.name}` };
 }
 
 export default async function ProductDetailPage({

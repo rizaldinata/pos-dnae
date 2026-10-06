@@ -9,7 +9,7 @@ import { SupplierDebtManagement } from "@/modules/purchasing/presentation/compon
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Hutang Supplier — POS DNAE",
+  title: "Hutang Supplier",
 };
 
 export default async function SupplierDebtPage({

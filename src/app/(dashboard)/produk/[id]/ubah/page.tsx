@@ -8,7 +8,7 @@ import { BundleItemsEditor } from "@/modules/catalog/presentation/components/bun
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Ubah Produk — POS DNAE",
+  title: "Ubah Produk",
 };
 
 export default async function EditProductPage({

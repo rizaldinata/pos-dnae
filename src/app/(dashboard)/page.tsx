@@ -25,7 +25,7 @@ import { formatDateTimeJakarta, toISODateJakarta } from "@/shared/lib/date";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Dasbor — POS DNAE",
+  title: "Dasbor",
 };
 
 function addDays(iso: string, days: number): string {
