@@ -11,6 +11,7 @@ import { Money } from "@/shared/lib/money";
 import { DuplicateSkuError } from "@/modules/catalog/domain/errors";
 import { NotFoundError, ValidationError } from "@/shared/kernel/errors";
 import { ok } from "@/shared/kernel/result";
+import { VariantInputSchema } from "@/modules/catalog/application/dto/product.dto";
 
 function makeVariant(
   id: string,
@@ -196,5 +197,37 @@ describe("UpdateProductUseCase", () => {
     const { updateUseCase } = setup({ products: [existing] });
     const result = await updateUseCase.execute("p-1", { name: "Baru" });
     expect(result.success).toBe(true);
+  });
+});
+
+describe("VariantInputSchema — foto varian", () => {
+  const base = { costPrice: 1000, sellPrice: 2000 };
+
+  it("mempertahankan imageUrl yang diisi", () => {
+    const parsed = VariantInputSchema.parse({
+      ...base,
+      sku: "SCREAM-COKLAT",
+      imageUrl: " https://cdn.example.com/coklat.png ",
+    });
+    expect(parsed.imageUrl).toBe("https://cdn.example.com/coklat.png");
+  });
+
+  it("menormalkan imageUrl kosong menjadi null", () => {
+    const parsed = VariantInputSchema.parse({
+      ...base,
+      sku: "SCREAM-STRAWBERRY",
+      imageUrl: "",
+    });
+    expect(parsed.imageUrl).toBeNull();
+  });
+
+  it("menormalkan imageUrl yang tidak dikirim menjadi null", () => {
+    const parsed = VariantInputSchema.parse({ ...base, sku: "SCREAM-MELON" });
+    expect(parsed.imageUrl).toBeNull();
+  });
+
+  it("entity varian tanpa foto jatuh ke null (fallback gambar produk)", () => {
+    const variant = makeVariant("v-1", "p-1", "SCREAM-ANGGUR");
+    expect(variant.imageUrl).toBeNull();
   });
 });

@@ -227,6 +227,7 @@ export function POSProductSearch({
           <div className="flex flex-col gap-2">
             {variantPicker?.variants.map((v) => {
               const empty = v.trackStock && (v.stockQty ?? 0) <= 0;
+              const thumb = v.imageUrl ?? variantPicker.imageUrl;
               const tierHint =
                 v.tiers.length > 0 && v.tiers[0]
                   ? ` • Grosir ≥${v.tiers[0].minQty}: ${formatRupiah(v.tiers[0].price)}`
@@ -242,7 +243,17 @@ export function POSProductSearch({
                     setVariantPicker(null);
                   }}
                 >
-                  <span>{v.variantName || v.sku}</span>
+                  <span className="flex items-center gap-2">
+                    {thumb ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={thumb}
+                        alt={`Foto ${v.variantName || v.sku}`}
+                        className="h-8 w-8 shrink-0 rounded-md border object-cover"
+                      />
+                    ) : null}
+                    {v.variantName || v.sku}
+                  </span>
                   <span className="text-muted-foreground">
                     {formatRupiah(v.sellPrice)} •{" "}
                     {empty ? "Habis" : `Stok ${v.stockQty}`}

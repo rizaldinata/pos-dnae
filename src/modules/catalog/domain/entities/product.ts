@@ -12,6 +12,8 @@ export interface ProductVariantProps {
   sellPrice: Money;
   minStock: number;
   trackStock: boolean;
+  /** Foto varian sendiri; null = ikuti gambar produk (fallback). */
+  imageUrl?: string | null;
   stockQty?: number;
 }
 
@@ -34,6 +36,7 @@ export class ProductVariant extends BaseEntity<ProductVariantProps> {
         ...props,
         variantName: props.variantName.trim(),
         barcode: props.barcode?.trim() ? props.barcode.trim() : null,
+        imageUrl: props.imageUrl?.trim() ? props.imageUrl.trim() : null,
       },
       id,
       timestamps
@@ -50,6 +53,10 @@ export class ProductVariant extends BaseEntity<ProductVariantProps> {
 
   public get barcode(): string | null {
     return this._props.barcode;
+  }
+
+  public get imageUrl(): string | null {
+    return this._props.imageUrl ?? null;
   }
 
   public get variantName(): string {

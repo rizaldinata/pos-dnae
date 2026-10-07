@@ -92,6 +92,7 @@ export default async function EditProductPage({
             sellPrice: String(v.sellPrice.amount),
             minStock: String(v.minStock),
             trackStock: v.trackStock,
+            imageUrl: v.imageUrl,
             tiers: tiersByVariant[v.id] ?? [],
           })),
         }}

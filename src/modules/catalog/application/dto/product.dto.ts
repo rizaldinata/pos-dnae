@@ -34,6 +34,12 @@ export const VariantInputSchema = z.object({
     .optional()
     .default(0),
   trackStock: z.boolean().optional().default(true),
+  imageUrl: z
+    .string()
+    .trim()
+    .max(500, { error: "URL foto varian maksimal 500 karakter" })
+    .nullish()
+    .transform((s) => (s ? s : null)),
 });
 
 export type VariantInputDTO = z.infer<typeof VariantInputSchema>;

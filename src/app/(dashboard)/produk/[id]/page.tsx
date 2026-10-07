@@ -117,7 +117,17 @@ export default async function ProductDetailPage({
                 {product.variants.map((v) => (
                   <TableRow key={v.id}>
                     <TableCell className="font-medium">
-                      {v.variantName || "-"}
+                      <span className="flex items-center gap-2">
+                        {v.imageUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={v.imageUrl}
+                            alt={`Foto ${v.variantName || v.sku.value}`}
+                            className="h-8 w-8 shrink-0 rounded-md border object-cover"
+                          />
+                        ) : null}
+                        {v.variantName || "-"}
+                      </span>
                     </TableCell>
                     <TableCell className="font-mono text-xs">
                       {v.sku.value}

@@ -23,6 +23,11 @@ export interface POSVariant {
   stockQty: number | null;
   trackStock: boolean;
   minStock: number;
+  /**
+   * Foto varian; null/absen = pakai foto produk (fallback). Opsional karena
+   * sumber lain (item hold, keranjang) tidak menyimpan foto.
+   */
+  imageUrl?: string | null;
   /** true bila varian berasal dari produk bundle (opsional: tidak semua sumber tahu). */
   isBundle?: boolean;
   tiers: POSTier[];
@@ -61,6 +66,7 @@ function toPOSProduct(
       stockQty: v.stockQty ?? null,
       trackStock: v.trackStock,
       minStock: v.minStock,
+      imageUrl: v.imageUrl,
       isBundle: product.isBundle,
       tiers: tiersByVariant[v.id] ?? [],
     })),

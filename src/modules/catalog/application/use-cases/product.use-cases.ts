@@ -132,6 +132,7 @@ export class UpdateProductUseCase {
         sellPrice: v.sellPrice,
         minStock: v.minStock,
         trackStock: v.trackStock,
+        imageUrl: v.imageUrl,
       })),
     });
   }

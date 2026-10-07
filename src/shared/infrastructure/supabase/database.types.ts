@@ -577,6 +577,7 @@ export type Database = {
           created_at: string;
           deleted_at: string | null;
           id: string;
+          image_url: string | null;
           min_stock: number;
           product_id: string;
           sell_price: number;
@@ -591,6 +592,7 @@ export type Database = {
           created_at?: string;
           deleted_at?: string | null;
           id?: string;
+          image_url?: string | null;
           min_stock?: number;
           product_id: string;
           sell_price?: number;
@@ -605,6 +607,7 @@ export type Database = {
           created_at?: string;
           deleted_at?: string | null;
           id?: string;
+          image_url?: string | null;
           min_stock?: number;
           product_id?: string;
           sell_price?: number;

@@ -38,6 +38,12 @@ export interface VariantFormRow {
   sellPrice: string;
   minStock: string;
   trackStock: boolean;
+  /** URL foto tersimpan (null = belum ada). */
+  imageUrl: string | null;
+  /** File foto baru yang menunggu diunggah saat submit. */
+  photoFile: File | null;
+  /** Preview tampilan: objectURL foto baru, atau imageUrl tersimpan. */
+  photoPreview: string;
   tiers: VariantTierRow[];
 }
 
@@ -51,7 +57,10 @@ export interface ProductFormInitial {
   imageUrl?: string | null;
   isActive: boolean;
   isBundle?: boolean;
-  variants: (Omit<VariantFormRow, "key" | "tiers"> & {
+  variants: (Omit<
+    VariantFormRow,
+    "key" | "tiers" | "photoFile" | "photoPreview"
+  > & {
     tiers: { minQty: number; price: number }[];
   })[];
 }
@@ -74,6 +83,9 @@ function newVariantRow(): VariantFormRow {
     sellPrice: "",
     minStock: "",
     trackStock: true,
+    imageUrl: null,
+    photoFile: null,
+    photoPreview: "",
     tiers: [],
   };
 }
@@ -113,6 +125,8 @@ export function ProductForm({
     initial?.variants.map((v, i) => ({
       ...v,
       key: v.id ?? `init-${i}`,
+      photoFile: null,
+      photoPreview: v.imageUrl ?? "",
       tiers: v.tiers.map((t) => ({
         minQty: String(t.minQty),
         price: String(t.price),
@@ -227,6 +241,35 @@ export function ProductForm({
     }
   }
 
+  async function handleVariantPhotoSelect(key: string, file?: File) {
+    if (!file) {
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      setState({ success: false, message: "File foto varian harus gambar" });
+      return;
+    }
+    try {
+      const compressed = await imageCompression(file, {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1024,
+        useWebWorker: true,
+      });
+      updateVariant(key, {
+        photoFile: new File([compressed], file.name, {
+          type: compressed.type || file.type,
+        }),
+        photoPreview: URL.createObjectURL(compressed),
+      });
+    } catch {
+      setState({ success: false, message: "Gagal mengompres foto varian" });
+    }
+  }
+
+  function clearVariantPhoto(key: string) {
+    updateVariant(key, { imageUrl: null, photoFile: null, photoPreview: "" });
+  }
+
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData();
@@ -245,21 +288,6 @@ export function ProductForm({
     if (isBundle) {
       formData.set("isBundle", "on");
     }
-    formData.set(
-      "variants",
-      JSON.stringify(
-        variants.map((v) => ({
-          id: v.id || undefined,
-          sku: v.sku,
-          barcode: v.barcode || null,
-          variantName: v.variantName,
-          costPrice: Number(v.costPrice) || 0,
-          sellPrice: Number(v.sellPrice) || 0,
-          minStock: Number(v.minStock) || 0,
-          trackStock: v.trackStock,
-        }))
-      )
-    );
 
     startTransition(async () => {
       if (photoFile) {
@@ -276,6 +304,41 @@ export function ProductForm({
         formData.set("imageUrl", uploaded.url);
         setImageUrl(uploaded.url);
       }
+      // Unggah foto varian yang baru dipilih, lalu susun payload varian
+      // dengan URL final (foto baru menimpa foto tersimpan).
+      const uploadedVariantUrls = new Map<string, string>();
+      for (const v of variants) {
+        if (!v.photoFile) {
+          continue;
+        }
+        const uploadData = new FormData();
+        uploadData.set("photo", v.photoFile);
+        const uploaded = await uploadProductImageAction(uploadData);
+        if (!uploaded.success || !uploaded.url) {
+          setState({
+            success: false,
+            message: `Foto varian ${v.variantName || v.sku || "tanpa nama"} gagal diunggah: ${uploaded.message ?? "upload gagal"}`,
+          });
+          return;
+        }
+        uploadedVariantUrls.set(v.key, uploaded.url);
+      }
+      formData.set(
+        "variants",
+        JSON.stringify(
+          variants.map((v) => ({
+            id: v.id || undefined,
+            sku: v.sku,
+            barcode: v.barcode || null,
+            variantName: v.variantName,
+            costPrice: Number(v.costPrice) || 0,
+            sellPrice: Number(v.sellPrice) || 0,
+            minStock: Number(v.minStock) || 0,
+            trackStock: v.trackStock,
+            imageUrl: uploadedVariantUrls.get(v.key) ?? v.imageUrl ?? null,
+          }))
+        )
+      );
       const result =
         mode === "create"
           ? await createProductAction(initialState, formData)
@@ -469,6 +532,7 @@ export function ProductForm({
                   <TableHead>SKU</TableHead>
                   <TableHead>Barcode</TableHead>
                   <TableHead>Nama varian</TableHead>
+                  <TableHead>Foto</TableHead>
                   <TableHead className="text-right">Hrg modal</TableHead>
                   <TableHead className="text-right">Hrg jual</TableHead>
                   <TableHead className="text-right">Min stok</TableHead>
@@ -530,6 +594,52 @@ export function ProductForm({
                           className="min-w-24"
                           aria-label="Nama varian"
                         />
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {v.photoPreview ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={v.photoPreview}
+                              alt={`Foto ${v.variantName || v.sku}`}
+                              className="h-9 w-9 shrink-0 rounded-md border object-cover"
+                            />
+                          ) : (
+                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border text-[10px] text-muted-foreground">
+                              Foto
+                            </span>
+                          )}
+                          <div className="flex flex-col items-start gap-0.5">
+                            <label className="cursor-pointer text-xs text-primary hover:underline">
+                              {v.photoFile || v.imageUrl ? "Ganti" : "Pilih"}
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="sr-only"
+                                disabled={pending}
+                                onChange={(e) => {
+                                  void handleVariantPhotoSelect(
+                                    v.key,
+                                    e.target.files?.[0]
+                                  );
+                                  e.target.value = "";
+                                }}
+                              />
+                            </label>
+                            {(v.photoFile || v.imageUrl) && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-5 px-1 text-xs"
+                                disabled={pending}
+                                onClick={() => clearVariantPhoto(v.key)}
+                              >
+                                Hapus
+                              </Button>
+                            )}
+                          </div>
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Input
@@ -603,7 +713,7 @@ export function ProductForm({
                     </TableRow>
                     {expandedTiers === v.key && (
                       <TableRow key={`${v.key}-tiers`}>
-                        <TableCell colSpan={7}>
+                        <TableCell colSpan={8}>
                           <div className="flex flex-col gap-2 rounded-md bg-muted/50 p-2">
                             <p className="text-xs font-medium">
                               Harga grosir — berlaku otomatis saat qty mencapai

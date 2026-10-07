@@ -18,6 +18,7 @@ export interface VariantRow {
   sell_price: number | string;
   min_stock: number | string;
   track_stock: boolean;
+  image_url: string | null;
   created_at: string;
   updated_at: string;
   stocks: { qty: number | string } | null;
@@ -53,6 +54,7 @@ export function mapVariantRow(row: VariantRow): ProductVariant {
       sellPrice: Money.create(Math.round(Number(row.sell_price))),
       minStock: Number(row.min_stock),
       trackStock: row.track_stock,
+      imageUrl: row.image_url,
       stockQty: Number.isFinite(stockQty) ? stockQty : undefined,
     },
     row.id,

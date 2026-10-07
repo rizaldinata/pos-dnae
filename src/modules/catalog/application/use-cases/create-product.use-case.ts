@@ -66,6 +66,7 @@ export class CreateProductUseCase {
         sellPrice: v.sellPrice,
         minStock: v.minStock,
         trackStock: v.trackStock,
+        imageUrl: v.imageUrl,
       })),
     });
   }

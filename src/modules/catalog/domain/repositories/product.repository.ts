@@ -21,6 +21,7 @@ export interface VariantInput {
   sellPrice: number;
   minStock?: number;
   trackStock?: boolean;
+  imageUrl?: string | null;
 }
 
 export interface CreateProductRecord {

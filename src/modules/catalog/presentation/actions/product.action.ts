@@ -50,6 +50,7 @@ interface VariantFormInput {
   sellPrice: number;
   minStock?: number;
   trackStock?: boolean;
+  imageUrl?: string | null;
 }
 
 function parseVariants(raw: string): VariantFormInput[] | null {
@@ -94,6 +95,7 @@ export async function createProductAction(
       sellPrice: Number(v.sellPrice) || 0,
       minStock: Number(v.minStock) || 0,
       trackStock: v.trackStock !== false,
+      imageUrl: v.imageUrl ?? null,
     })),
   });
 
@@ -152,6 +154,7 @@ export async function updateProductAction(
       sellPrice: Number(v.sellPrice) || 0,
       minStock: Number(v.minStock) || 0,
       trackStock: v.trackStock !== false,
+      imageUrl: v.imageUrl ?? null,
     })),
   });
 

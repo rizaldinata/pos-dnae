@@ -61,6 +61,7 @@ const PRODUCT_SELECT = `
     sell_price,
     min_stock,
     track_stock,
+    image_url,
     created_at,
     updated_at,
     stocks ( qty )
@@ -77,6 +78,7 @@ const VARIANT_WITH_PRODUCT_SELECT = `
   sell_price,
   min_stock,
   track_stock,
+  image_url,
   created_at,
   updated_at,
   stocks ( qty )
@@ -378,6 +380,7 @@ export class SupabaseProductRepository implements IProductRepository {
           sell_price: v.sellPrice,
           min_stock: v.minStock ?? 0,
           track_stock: v.trackStock ?? true,
+          image_url: v.imageUrl ?? null,
         }))
       );
 
@@ -525,6 +528,7 @@ export class SupabaseProductRepository implements IProductRepository {
         sell_price: input.sellPrice,
         min_stock: input.minStock ?? 0,
         track_stock: input.trackStock ?? true,
+        image_url: input.imageUrl ?? null,
       };
       if (input.id && currentIds.has(input.id)) {
         const { error } = await this.client
