@@ -119,7 +119,11 @@ export function ProductImportWizard() {
             aria-label="File impor produk"
           />
           <div>
-            <Button onClick={handlePreview} disabled={pending || !file}>
+            <Button
+              onClick={handlePreview}
+              disabled={pending || !file}
+              loading={pending}
+            >
               {pending ? "Memvalidasi..." : "Periksa & Validasi"}
             </Button>
           </div>
@@ -229,6 +233,7 @@ export function ProductImportWizard() {
             <div className="flex flex-wrap gap-2">
               <Button
                 onClick={handleImport}
+                loading={pending}
                 disabled={pending || validRows === 0}
               >
                 {pending ? "Mengimpor..." : `Impor ${validRows} baris valid`}

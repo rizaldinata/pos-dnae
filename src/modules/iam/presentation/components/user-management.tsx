@@ -268,7 +268,11 @@ export function UserManagement({
               </p>
             )}
             <DialogFooter>
-              <Button type="submit" disabled={createPending}>
+              <Button
+                type="submit"
+                disabled={createPending}
+                loading={createPending}
+              >
                 {createPending ? "Menyimpan..." : "Simpan"}
               </Button>
             </DialogFooter>
@@ -360,7 +364,11 @@ export function UserManagement({
                 </p>
               )}
               <DialogFooter>
-                <Button type="submit" disabled={updatePending}>
+                <Button
+                  type="submit"
+                  disabled={updatePending}
+                  loading={updatePending}
+                >
                   {updatePending ? "Menyimpan..." : "Simpan"}
                 </Button>
               </DialogFooter>

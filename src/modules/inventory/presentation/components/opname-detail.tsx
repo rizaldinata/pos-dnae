@@ -94,6 +94,7 @@ export function OpnameDetail({
         {canApprove && !approved && (
           <Button
             onClick={handleApprove}
+            loading={pending}
             disabled={pending}
             className="min-h-11"
           >

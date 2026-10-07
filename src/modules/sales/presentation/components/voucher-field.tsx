@@ -89,6 +89,7 @@ export function VoucherField({ baseAmount }: { baseAmount: number }) {
         variant="outline"
         size="sm"
         onClick={apply}
+        loading={pending}
         disabled={pending || !code.trim()}
       >
         {pending ? "Cek..." : "Pakai"}

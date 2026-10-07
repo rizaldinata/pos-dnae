@@ -206,6 +206,7 @@ export function ReceivableManagement() {
               <Button
                 onClick={handlePay}
                 disabled={pending}
+                loading={pending}
                 className="min-h-11"
               >
                 {pending ? "Menyimpan..." : "Catat pembayaran"}

@@ -153,6 +153,7 @@ export function LoyaltyHistory({
               <Button
                 onClick={submit}
                 disabled={pending || !points.trim() || !note.trim()}
+                loading={pending}
                 className="min-h-11"
               >
                 {pending ? "Menyimpan..." : "Simpan penyesuaian"}

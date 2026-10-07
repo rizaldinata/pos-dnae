@@ -105,6 +105,7 @@ export function RedeemField() {
           variant="outline"
           size="sm"
           onClick={apply}
+          loading={pending}
           disabled={
             pending || !points.trim() || Math.floor(Number(points) || 0) <= 0
           }

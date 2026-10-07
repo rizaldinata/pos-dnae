@@ -111,6 +111,7 @@ export function CashMovementDialog({
           <DialogFooter>
             <Button
               onClick={handleSubmit}
+              loading={pending}
               disabled={pending || Math.round(Number(amount) || 0) <= 0}
               className="min-h-11"
             >

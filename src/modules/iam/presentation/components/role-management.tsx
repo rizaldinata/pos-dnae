@@ -190,6 +190,7 @@ export function RoleManagement({
                         variant="ghost"
                         size="sm"
                         disabled={pending}
+                        loading={pending}
                         onClick={() => handleDelete(role)}
                       >
                         Hapus
@@ -236,7 +237,7 @@ export function RoleManagement({
               prefix="Buat"
             />
             <DialogFooter>
-              <Button type="submit" disabled={pending}>
+              <Button type="submit" disabled={pending} loading={pending}>
                 {pending ? "Menyimpan..." : "Simpan"}
               </Button>
             </DialogFooter>
@@ -281,7 +282,7 @@ export function RoleManagement({
                 prefix="Ubah"
               />
               <DialogFooter>
-                <Button type="submit" disabled={pending}>
+                <Button type="submit" disabled={pending} loading={pending}>
                   {pending ? "Menyimpan..." : "Simpan"}
                 </Button>
               </DialogFooter>

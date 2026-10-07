@@ -487,6 +487,7 @@ export function PromotionManagement({
                         variant="ghost"
                         size="sm"
                         disabled={pending}
+                        loading={pending}
                         onClick={() => handleToggle(promo)}
                       >
                         {promo.isActive ? "Nonaktifkan" : "Aktifkan"}
@@ -539,7 +540,7 @@ export function PromotionManagement({
               >
                 Batal
               </Button>
-              <Button type="submit" disabled={pending}>
+              <Button type="submit" disabled={pending} loading={pending}>
                 {pending ? "Menyimpan..." : "Simpan"}
               </Button>
             </DialogFooter>
@@ -582,7 +583,7 @@ export function PromotionManagement({
                 >
                   Batal
                 </Button>
-                <Button type="submit" disabled={pending}>
+                <Button type="submit" disabled={pending} loading={pending}>
                   {pending ? "Menyimpan..." : "Simpan"}
                 </Button>
               </DialogFooter>

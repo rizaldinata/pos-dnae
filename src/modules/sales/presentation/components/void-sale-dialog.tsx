@@ -86,6 +86,7 @@ export function VoidSaleDialog({
             <Button
               variant="destructive"
               onClick={handleVoid}
+              loading={pending}
               disabled={pending || reason.trim() === ""}
             >
               {pending ? "Memproses..." : "Ya, void"}

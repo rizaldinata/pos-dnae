@@ -197,6 +197,7 @@ export function SupplierManagement({
                       variant="ghost"
                       size="sm"
                       disabled={pending}
+                      loading={pending}
                       onClick={() => handleDelete(supplier)}
                     >
                       Hapus
@@ -233,7 +234,7 @@ export function SupplierManagement({
           >
             <SupplierFields disabled={pending} />
             <DialogFooter>
-              <Button type="submit" disabled={pending}>
+              <Button type="submit" disabled={pending} loading={pending}>
                 {pending ? "Menyimpan..." : "Simpan"}
               </Button>
             </DialogFooter>
@@ -260,7 +261,7 @@ export function SupplierManagement({
               <input type="hidden" name="supplierId" value={editing.id} />
               <SupplierFields supplier={editing} disabled={pending} />
               <DialogFooter>
-                <Button type="submit" disabled={pending}>
+                <Button type="submit" disabled={pending} loading={pending}>
                   {pending ? "Menyimpan..." : "Simpan"}
                 </Button>
               </DialogFooter>

@@ -129,6 +129,7 @@ export function CategoryManagement({
                 size="sm"
                 onClick={() => handleDelete(c.id, c.name)}
                 disabled={pending}
+                loading={pending}
               >
                 Hapus
               </Button>
@@ -188,7 +189,7 @@ export function CategoryManagement({
               </select>
             </div>
             <DialogFooter>
-              <Button type="submit" disabled={pending}>
+              <Button type="submit" disabled={pending} loading={pending}>
                 {pending ? "Menyimpan..." : "Simpan"}
               </Button>
             </DialogFooter>
@@ -249,7 +250,7 @@ export function CategoryManagement({
                 </select>
               </div>
               <DialogFooter>
-                <Button type="submit" disabled={pending}>
+                <Button type="submit" disabled={pending} loading={pending}>
                   {pending ? "Menyimpan..." : "Simpan"}
                 </Button>
               </DialogFooter>

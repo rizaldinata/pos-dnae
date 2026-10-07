@@ -180,7 +180,7 @@ function CategoryManager({
             placeholder="Mis. Listrik"
           />
         </div>
-        <Button type="submit" disabled={disabled || pending}>
+        <Button type="submit" disabled={disabled || pending} loading={pending}>
           Tambah
         </Button>
       </form>
@@ -221,7 +221,12 @@ function CategoryManager({
                         disabled={pending}
                         className="min-h-9"
                       />
-                      <Button type="submit" size="sm" disabled={pending}>
+                      <Button
+                        type="submit"
+                        size="sm"
+                        disabled={pending}
+                        loading={pending}
+                      >
                         Simpan
                       </Button>
                     </form>
@@ -243,6 +248,7 @@ function CategoryManager({
                         variant="ghost"
                         size="sm"
                         disabled={pending}
+                        loading={pending}
                         onClick={() => {
                           if (confirm(`Hapus kategori "${category.name}"?`)) {
                             run(() => deleteExpenseCategoryAction(category.id));
@@ -429,6 +435,7 @@ export function ExpenseManagement({
                       variant="ghost"
                       size="sm"
                       disabled={pending}
+                      loading={pending}
                       onClick={() => handleDelete(expense)}
                     >
                       Hapus
@@ -499,7 +506,7 @@ export function ExpenseManagement({
               >
                 Batal
               </Button>
-              <Button type="submit" disabled={pending}>
+              <Button type="submit" disabled={pending} loading={pending}>
                 {pending ? "Menyimpan..." : "Simpan"}
               </Button>
             </DialogFooter>
@@ -539,7 +546,7 @@ export function ExpenseManagement({
                 >
                   Batal
                 </Button>
-                <Button type="submit" disabled={pending}>
+                <Button type="submit" disabled={pending} loading={pending}>
                   {pending ? "Menyimpan..." : "Simpan"}
                 </Button>
               </DialogFooter>

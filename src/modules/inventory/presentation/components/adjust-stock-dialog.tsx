@@ -105,6 +105,7 @@ export function AdjustStockDialog({
           <DialogFooter>
             <Button
               onClick={handleAdjust}
+              loading={pending}
               disabled={pending || reason.trim() === ""}
               className="min-h-11"
             >

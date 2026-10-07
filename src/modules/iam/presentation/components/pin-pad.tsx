@@ -123,6 +123,7 @@ export function PinPad({
       <Button
         onClick={handleSubmit}
         disabled={pending || pin.length < 4}
+        loading={pending}
         aria-label="Masuk dengan PIN"
         className="min-h-11"
       >

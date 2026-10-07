@@ -177,6 +177,7 @@ export function CloseShiftDialog({
           <DialogFooter>
             <Button
               onClick={handleClose}
+              loading={pending}
               disabled={pending || !summary || needsNote}
               className="min-h-11"
             >

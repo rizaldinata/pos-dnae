@@ -225,6 +225,7 @@ export function PurchaseReturnManagement({
               !supplierId ||
               reason.trim() === ""
             }
+            loading={pending}
             className="min-h-11"
           >
             {pending ? "Menyimpan..." : "Catat retur"}

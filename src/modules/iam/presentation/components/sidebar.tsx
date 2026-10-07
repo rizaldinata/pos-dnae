@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
@@ -123,6 +123,7 @@ function canSee(item: MenuItem, permissions: string[]): boolean {
 export function Sidebar({ user }: { user: SidebarUser }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [loggingOut, startLogout] = useTransition();
 
   const visibleItems = MENU_ITEMS.filter((item) =>
     canSee(item, user.permissions)
@@ -226,11 +227,12 @@ export function Sidebar({ user }: { user: SidebarUser }) {
         <div className="mt-1 flex flex-col gap-1">
           <ThemeToggle className="hover:bg-sidebar-hover" />
           <SwitchCashierButton />
-          <form action={logoutAction}>
+          <form action={() => startLogout(() => logoutAction())}>
             <Button
               variant="ghost"
               size="sm"
               type="submit"
+              loading={loggingOut}
               className="w-full justify-start hover:bg-sidebar-hover"
             >
               <LogOut className="size-4" />

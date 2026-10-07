@@ -42,6 +42,7 @@ export function POActions({
         {status === "draft" && (
           <Button
             disabled={pending}
+            loading={pending}
             onClick={() => run(sendPOAction)}
             className="min-h-11"
           >
@@ -52,6 +53,7 @@ export function POActions({
           <Button
             variant="outline"
             disabled={pending}
+            loading={pending}
             onClick={() => {
               if (confirm("Batalkan PO ini?")) {
                 run(cancelPOAction);

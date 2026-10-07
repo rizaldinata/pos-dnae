@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { Loader2 } from "lucide-react";
 import { searchProductsPOSAction } from "@/modules/sales/presentation/actions/pos-search.action";
 import type {
   POSProduct,
@@ -152,7 +153,15 @@ export function POSProductSearch({
         aria-label="Cari produk kasir"
         autoFocus
       />
-      {searching && <p className="text-sm text-muted-foreground">Mencari...</p>}
+      {searching && (
+        <p
+          role="status"
+          className="flex items-center gap-2 text-sm text-muted-foreground"
+        >
+          <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+          Mencari...
+        </p>
+      )}
       {!searching && query.trim() && results.length === 0 && (
         <p className="text-sm text-muted-foreground">
           Tidak ada produk ditemukan

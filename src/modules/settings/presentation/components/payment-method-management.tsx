@@ -151,6 +151,7 @@ export function PaymentMethodManagement({
                       variant={method.isActive ? "ghost" : "outline"}
                       size="sm"
                       disabled={pending}
+                      loading={pending}
                       onClick={() => handleToggle(method)}
                     >
                       {method.isActive ? "Nonaktifkan" : "Aktifkan"}
@@ -219,7 +220,7 @@ export function PaymentMethodManagement({
               </select>
             </div>
             <DialogFooter>
-              <Button type="submit" disabled={pending}>
+              <Button type="submit" disabled={pending} loading={pending}>
                 {pending ? "Menyimpan..." : "Simpan"}
               </Button>
             </DialogFooter>
@@ -276,7 +277,7 @@ export function PaymentMethodManagement({
                 </select>
               </div>
               <DialogFooter>
-                <Button type="submit" disabled={pending}>
+                <Button type="submit" disabled={pending} loading={pending}>
                   {pending ? "Menyimpan..." : "Simpan"}
                 </Button>
               </DialogFooter>

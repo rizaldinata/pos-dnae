@@ -183,6 +183,7 @@ export function ReturnSaleDialog({
           <DialogFooter>
             <Button
               onClick={handleReturn}
+              loading={pending}
               disabled={
                 pending ||
                 selected.length === 0 ||

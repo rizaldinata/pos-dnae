@@ -60,6 +60,7 @@ export function HoldButton() {
       variant="outline"
       size="sm"
       disabled={pending || items.length === 0}
+      loading={pending}
       onClick={handleHold}
       className="min-h-11"
     >
@@ -196,6 +197,7 @@ export function HeldSalesDialog({ refreshKey }: { refreshKey: number }) {
                   </div>
                   <Button
                     size="sm"
+                    loading={pending}
                     disabled={pending}
                     onClick={() => handleResume(h.saleId)}
                   >
@@ -204,6 +206,7 @@ export function HeldSalesDialog({ refreshKey }: { refreshKey: number }) {
                   <Button
                     size="sm"
                     variant="ghost"
+                    loading={pending}
                     disabled={pending}
                     onClick={() => handleCancel(h.saleId)}
                   >

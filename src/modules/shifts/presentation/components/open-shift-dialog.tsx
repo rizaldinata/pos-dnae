@@ -91,7 +91,12 @@ export function OpenShiftDialog({
           </p>
         )}
         <DialogFooter>
-          <Button onClick={handleOpen} disabled={pending} className="min-h-11">
+          <Button
+            onClick={handleOpen}
+            loading={pending}
+            disabled={pending}
+            className="min-h-11"
+          >
             {pending ? "Membuka..." : "Buka shift"}
           </Button>
         </DialogFooter>

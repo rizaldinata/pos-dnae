@@ -222,6 +222,7 @@ export function CustomerManagement({
                       variant="ghost"
                       size="sm"
                       disabled={pending}
+                      loading={pending}
                       onClick={() => handleDelete(customer)}
                     >
                       Hapus
@@ -258,7 +259,7 @@ export function CustomerManagement({
           >
             <CustomerFields disabled={pending} />
             <DialogFooter>
-              <Button type="submit" disabled={pending}>
+              <Button type="submit" disabled={pending} loading={pending}>
                 {pending ? "Menyimpan..." : "Simpan"}
               </Button>
             </DialogFooter>
@@ -285,7 +286,7 @@ export function CustomerManagement({
               <input type="hidden" name="customerId" value={editing.id} />
               <CustomerFields customer={editing} disabled={pending} />
               <DialogFooter>
-                <Button type="submit" disabled={pending}>
+                <Button type="submit" disabled={pending} loading={pending}>
                   {pending ? "Menyimpan..." : "Simpan"}
                 </Button>
               </DialogFooter>

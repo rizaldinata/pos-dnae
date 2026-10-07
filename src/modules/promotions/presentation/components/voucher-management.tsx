@@ -274,6 +274,7 @@ export function VoucherManagement({ vouchers }: { vouchers: VoucherDTO[] }) {
                       variant="ghost"
                       size="sm"
                       disabled={pending}
+                      loading={pending}
                       onClick={() => handleToggle(voucher)}
                     >
                       {voucher.isActive ? "Nonaktifkan" : "Aktifkan"}
@@ -316,7 +317,7 @@ export function VoucherManagement({ vouchers }: { vouchers: VoucherDTO[] }) {
               >
                 Batal
               </Button>
-              <Button type="submit" disabled={pending}>
+              <Button type="submit" disabled={pending} loading={pending}>
                 {pending ? "Menyimpan..." : "Simpan"}
               </Button>
             </DialogFooter>

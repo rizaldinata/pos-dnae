@@ -422,6 +422,7 @@ export function PaymentDialog({
             <Button
               onClick={handleConfirm}
               disabled={!canConfirm}
+              loading={pending}
               className="min-h-12 text-base"
             >
               {pending

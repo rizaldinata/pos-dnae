@@ -74,7 +74,12 @@ export function InventorySettingsForm({
               {message.text}
             </p>
           )}
-          <Button type="submit" disabled={pending} className="min-h-11">
+          <Button
+            type="submit"
+            disabled={pending}
+            loading={pending}
+            className="min-h-11"
+          >
             {pending ? "Menyimpan..." : "Simpan pengaturan inventori"}
           </Button>
         </form>

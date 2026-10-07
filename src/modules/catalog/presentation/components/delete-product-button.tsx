@@ -67,6 +67,7 @@ export function DeleteProductButton({
               variant="destructive"
               onClick={handleDelete}
               disabled={pending}
+              loading={pending}
             >
               {pending ? "Menghapus..." : "Ya, hapus"}
             </Button>

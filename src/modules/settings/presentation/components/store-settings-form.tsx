@@ -194,7 +194,12 @@ export function StoreSettingsForm({ initial }: { initial: StoreSettings }) {
                 {state.message}
               </p>
             )}
-            <Button type="submit" disabled={pending} className="min-h-11">
+            <Button
+              type="submit"
+              disabled={pending}
+              loading={pending}
+              className="min-h-11"
+            >
               {pending ? "Menyimpan..." : "Simpan pengaturan"}
             </Button>
           </form>

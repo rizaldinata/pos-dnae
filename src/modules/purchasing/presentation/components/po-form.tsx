@@ -251,6 +251,7 @@ export function POForm({
             <Button
               onClick={handleSubmit}
               disabled={pending || items.length === 0 || !supplierId}
+              loading={pending}
               className="min-h-11"
             >
               {pending ? "Menyimpan..." : "Buat PO"}

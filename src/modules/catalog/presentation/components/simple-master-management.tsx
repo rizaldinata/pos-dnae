@@ -129,6 +129,7 @@ export function SimpleMasterManagement({
                 size="sm"
                 onClick={() => handleDelete(item.id, item.name)}
                 disabled={pending}
+                loading={pending}
               >
                 Hapus
               </Button>
@@ -181,7 +182,7 @@ export function SimpleMasterManagement({
               </div>
             )}
             <DialogFooter>
-              <Button type="submit" disabled={pending}>
+              <Button type="submit" disabled={pending} loading={pending}>
                 {pending ? "Menyimpan..." : "Simpan"}
               </Button>
             </DialogFooter>
@@ -239,7 +240,7 @@ export function SimpleMasterManagement({
                 </div>
               )}
               <DialogFooter>
-                <Button type="submit" disabled={pending}>
+                <Button type="submit" disabled={pending} loading={pending}>
                   {pending ? "Menyimpan..." : "Simpan"}
                 </Button>
               </DialogFooter>

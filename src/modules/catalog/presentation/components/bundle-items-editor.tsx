@@ -244,6 +244,7 @@ export function BundleItemsEditor({
           type="button"
           onClick={handleSave}
           disabled={pending}
+          loading={pending}
           className="min-h-11"
         >
           {pending ? "Menyimpan..." : "Simpan komponen"}

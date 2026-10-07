@@ -64,7 +64,12 @@ export function LoginForm({ notice }: { notice?: string }) {
               {state.message ?? notice}
             </p>
           )}
-          <Button type="submit" disabled={isPending} className="min-h-11">
+          <Button
+            type="submit"
+            disabled={isPending}
+            loading={isPending}
+            className="min-h-11"
+          >
             {isPending ? "Memproses..." : "Masuk"}
           </Button>
         </form>

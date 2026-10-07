@@ -75,6 +75,7 @@ export function CreateOpnameDialog({
           <DialogFooter>
             <Button
               onClick={handleCreate}
+              loading={pending}
               disabled={pending}
               className="min-h-11"
             >

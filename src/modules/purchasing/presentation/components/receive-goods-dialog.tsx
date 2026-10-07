@@ -174,6 +174,7 @@ export function ReceiveGoodsDialog({
             <Button
               onClick={handleReceive}
               disabled={pending}
+              loading={pending}
               className="min-h-11"
             >
               {pending ? "Menyimpan..." : "Simpan penerimaan"}
