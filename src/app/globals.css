@@ -112,6 +112,21 @@ body {
   stroke: var(--border);
 }
 
+/* Dropdown native <select>: popup-nya dirender widget terpisah oleh browser,
+   bukan bagian dari paint halaman. Dengan background transparan, popup jatuh ke
+   warna sistem (putih) sementara teks mengikuti tema gelap → item tak terbaca.
+   Paksa background mengikuti tema; ditulis di luar @layer agar menimpa
+   utilitas Tailwind (bg-transparent) yang dipakai semua <select>. */
+select,
+select.bg-transparent {
+  background-color: var(--background);
+}
+
+option {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
 /* Struk thermal: saat cetak, hanya area struk yang terlihat (58/80mm). */
 @media print {
   body * {
