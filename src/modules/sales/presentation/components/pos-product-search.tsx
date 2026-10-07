@@ -73,24 +73,48 @@ export function POSProductSearch({
 }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<POSProduct[]>([]);
-  const [searching, setSearching] = useState(false);
+  const [searching, setSearching] = useState(true);
   const [variantPicker, setVariantPicker] = useState<POSProduct | null>(null);
   const addItem = useCartStore((s) => s.addItem);
   const [, startTransition] = useTransition();
+  const requestIdRef = useRef(0);
 
+  // Default: tampilkan daftar produk aktif (query kosong = tanpa filter,
+  // urut nama A–Z, maks 50) supaya kasir tidak perlu mencari dulu. Saat
+  // mengetik: debounce pencarian 300ms (maks 24 hasil). Guard requestId
+  // mencegah respons lama menimpa permintaan yang lebih baru.
   useEffect(() => {
-    if (!query.trim()) {
-      return;
-    }
-    const timer = setTimeout(() => {
-      startTransition(async () => {
-        const data = await searchProductsPOSAction(query.trim(), 24);
-        setResults(data);
-        setSearching(false);
-      });
-    }, 300);
+    const trimmed = query.trim();
+    const requestId = ++requestIdRef.current;
+    const timer = setTimeout(
+      () => {
+        startTransition(async () => {
+          const data = await searchProductsPOSAction(
+            trimmed,
+            trimmed ? 24 : 50
+          );
+          if (requestId !== requestIdRef.current) {
+            return; // sudah ketinggalan oleh permintaan lebih baru
+          }
+          setResults(data);
+          setSearching(false);
+        });
+      },
+      trimmed ? 300 : 0
+    );
     return () => clearTimeout(timer);
   }, [query]);
+
+  // Petunjuk singkat di atas grid: bedakan daftar default, hasil pencarian,
+  // dan kondisi kosong.
+  function statusHint(): string {
+    if (query.trim()) {
+      return results.length > 0
+        ? "Hasil pencarian"
+        : "Tidak ada produk ditemukan";
+    }
+    return results.length > 0 ? "Produk tersedia" : "Belum ada produk tersedia";
+  }
 
   function handleAddVariant(variant: POSVariant) {
     const error = addItem(variant);
@@ -140,12 +164,12 @@ export function POSProductSearch({
         id="pos-search-input"
         value={query}
         onChange={(e) => {
-          setQuery(e.target.value);
-          if (!e.target.value.trim()) {
+          const value = e.target.value;
+          setQuery(value);
+          setSearching(true);
+          if (!value.trim()) {
+            // Kosongkan dulu; daftar default menyusul dari effect di atas.
             setResults([]);
-            setSearching(false);
-          } else {
-            setSearching(true);
           }
         }}
         placeholder="Cari nama, SKU, atau scan barcode..."
@@ -159,13 +183,11 @@ export function POSProductSearch({
           className="flex items-center gap-2 text-sm text-muted-foreground"
         >
           <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
-          Mencari...
+          {query.trim() ? "Mencari..." : "Memuat produk..."}
         </p>
       )}
-      {!searching && query.trim() && results.length === 0 && (
-        <p className="text-sm text-muted-foreground">
-          Tidak ada produk ditemukan
-        </p>
+      {!searching && (
+        <p className="text-sm text-muted-foreground">{statusHint()}</p>
       )}
       <div className="grid grid-cols-2 gap-2 xl:grid-cols-3">
         {results.map((product) => {
