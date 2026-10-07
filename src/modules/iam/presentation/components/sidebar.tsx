@@ -244,7 +244,7 @@ export function Sidebar({ user }: { user: SidebarUser }) {
 
   return (
     <>
-      <div className="flex h-14 items-center gap-2 border-b border-sidebar-border bg-sidebar px-4 text-sidebar-foreground lg:hidden">
+      <div className="flex h-14 shrink-0 items-center gap-2 border-b border-sidebar-border bg-sidebar px-4 text-sidebar-foreground lg:hidden">
         <Button
           variant="ghost"
           size="icon"

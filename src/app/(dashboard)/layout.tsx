@@ -27,8 +27,10 @@ export default async function DashboardLayout({
   const expiringCount = isErr(expiringResult) ? 0 : expiringResult.data;
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <div className="flex flex-1 flex-col lg:flex-row">
+    // h-dvh + overflow-hidden mengunci tinggi viewport: dokumen tidak ikut
+    // scroll, sehingga sidebar tidak memanjang mengikuti konten halaman.
+    <div className="flex h-dvh flex-col overflow-hidden bg-background">
+      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <Sidebar
           user={{
             fullName: user.fullName,
@@ -38,7 +40,10 @@ export default async function DashboardLayout({
             expiringCount,
           }}
         />
-        <main className="min-w-0 flex-1 p-4 lg:p-6">{children}</main>
+        {/* Hanya <main> yang scroll; tingginya dibatasi baris di atasnya. */}
+        <main className="min-w-0 flex-1 overflow-y-auto p-4 lg:p-6">
+          {children}
+        </main>
       </div>
     </div>
   );
