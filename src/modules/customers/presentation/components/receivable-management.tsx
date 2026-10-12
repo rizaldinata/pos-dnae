@@ -12,6 +12,7 @@ import {
 } from "@/modules/sales/presentation/actions/checkout.action";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
+import { NativeSelect } from "@/shared/ui/native-select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import {
   Table,
@@ -187,7 +188,7 @@ export function ReceivableManagement() {
                 <label htmlFor="recv-method" className="text-sm font-medium">
                   Metode
                 </label>
-                <select
+                <NativeSelect
                   id="recv-method"
                   value={methodId}
                   onChange={(e) => setMethodId(e.target.value)}
@@ -199,7 +200,7 @@ export function ReceivableManagement() {
                       {m.name}
                     </option>
                   ))}
-                </select>
+                </NativeSelect>
               </div>
             </div>
             <div className="flex gap-2">

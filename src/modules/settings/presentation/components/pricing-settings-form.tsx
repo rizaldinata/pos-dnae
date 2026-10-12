@@ -5,6 +5,7 @@ import { updatePricingSettingsAction } from "@/modules/settings/presentation/act
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { NativeSelect } from "@/shared/ui/native-select";
 
 export interface PricingSettingsInitial {
   taxRate: number;
@@ -71,7 +72,7 @@ export function PricingSettingsForm({
               <label htmlFor="tax-mode" className="text-sm font-medium">
                 Mode pajak
               </label>
-              <select
+              <NativeSelect
                 id="tax-mode"
                 value={taxMode}
                 onChange={(e) =>
@@ -82,7 +83,7 @@ export function PricingSettingsForm({
               >
                 <option value="exclusive">Eksklusif (ditambah)</option>
                 <option value="inclusive">Inklusif (termasuk)</option>
-              </select>
+              </NativeSelect>
             </div>
             <div className="flex flex-col gap-2">
               <label htmlFor="service-fee" className="text-sm font-medium">

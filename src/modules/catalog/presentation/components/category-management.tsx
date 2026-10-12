@@ -17,6 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
+import { NativeSelect } from "@/shared/ui/native-select";
 
 export interface CategoryRow {
   id: string;
@@ -173,7 +174,7 @@ export function CategoryManagement({
               <label htmlFor="cat-parent" className="text-sm font-medium">
                 Induk (opsional)
               </label>
-              <select
+              <NativeSelect
                 id="cat-parent"
                 name="parentId"
                 className={selectClass}
@@ -186,7 +187,7 @@ export function CategoryManagement({
                     {"—".repeat(c.depth)} {c.name}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
             <DialogFooter>
               <Button type="submit" disabled={pending} loading={pending}>
@@ -234,7 +235,7 @@ export function CategoryManagement({
                 >
                   Induk
                 </label>
-                <select
+                <NativeSelect
                   id="cat-edit-parent"
                   name="parentId"
                   className={selectClass}
@@ -247,7 +248,7 @@ export function CategoryManagement({
                       {"—".repeat(c.depth)} {c.name}
                     </option>
                   ))}
-                </select>
+                </NativeSelect>
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={pending} loading={pending}>

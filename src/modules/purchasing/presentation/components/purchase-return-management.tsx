@@ -10,6 +10,7 @@ import { searchProductsPOSAction } from "@/modules/sales/presentation/actions/po
 import type { POSVariant } from "@/modules/sales/application/use-cases/search-products-pos.use-case";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
+import { NativeSelect } from "@/shared/ui/native-select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import {
   Table,
@@ -105,7 +106,7 @@ export function PurchaseReturnManagement({
               <label htmlFor="pr-supplier" className="text-sm font-medium">
                 Supplier
               </label>
-              <select
+              <NativeSelect
                 id="pr-supplier"
                 value={supplierId}
                 onChange={(e) => setSupplierId(e.target.value)}
@@ -117,7 +118,7 @@ export function PurchaseReturnManagement({
                     {s.name}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
             <div className="flex flex-col gap-2">
               <label htmlFor="pr-reason" className="text-sm font-medium">

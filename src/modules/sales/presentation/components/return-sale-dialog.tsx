@@ -6,6 +6,7 @@ import { createReturnAction } from "@/modules/sales/presentation/actions/void-re
 import type { PaymentMethodDTO } from "@/modules/sales/presentation/actions/checkout.action";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
+import { NativeSelect } from "@/shared/ui/native-select";
 import {
   Dialog,
   DialogContent,
@@ -141,7 +142,7 @@ export function ReturnSaleDialog({
               <label htmlFor="return-method" className="text-sm font-medium">
                 Metode refund
               </label>
-              <select
+              <NativeSelect
                 id="return-method"
                 value={refundMethodId}
                 onChange={(e) => setRefundMethodId(e.target.value)}
@@ -153,7 +154,7 @@ export function ReturnSaleDialog({
                     {m.name}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
             <div className="flex flex-col gap-2">
               <label htmlFor="return-reason" className="text-sm font-medium">

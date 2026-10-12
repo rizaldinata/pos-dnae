@@ -9,6 +9,7 @@ import {
 import { useCartTotals } from "@/modules/sales/presentation/hooks/use-cart-totals";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
+import { NativeSelect } from "@/shared/ui/native-select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { toast } from "@/shared/ui/toast";
 import { formatRupiah } from "@/shared/lib/format-rupiah";
@@ -58,7 +59,7 @@ function DiscountInput({
   return (
     <div className="flex items-center gap-1">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <select
+      <NativeSelect
         aria-label={`${label} tipe`}
         value={kind}
         onChange={(e) => setKind(e.target.value as "percent" | "amount")}
@@ -67,7 +68,7 @@ function DiscountInput({
       >
         <option value="percent">%</option>
         <option value="amount">Rp</option>
-      </select>
+      </NativeSelect>
       <Input
         aria-label={`${label} nilai`}
         type="number"
@@ -86,7 +87,16 @@ function DiscountInput({
   );
 }
 
-export function CartPanel() {
+export function CartPanel({
+  onRequireShift,
+}: {
+  /**
+   * Diberikan layar kasir saat shift belum terbuka. Bila ada, tombol Bayar
+   * membuka dialog buka shift alih-alih dialog pembayaran; penegakan tetap
+   * juga ada di server (checkout tanpa shift ditolak).
+   */
+  onRequireShift?: () => void;
+}) {
   const items = useCartStore((s) => s.items);
   const transactionDiscount = useCartStore((s) => s.transactionDiscount);
   const setQty = useCartStore((s) => s.setQty);
@@ -193,7 +203,7 @@ export function CartPanel() {
                         onChange={(e) =>
                           changeQty(item.variantId, Number(e.target.value))
                         }
-                        className="h-9 w-16 text-center"
+                        className="h-11 w-16 text-center"
                       />
                       <Button
                         variant="outline"
@@ -335,6 +345,10 @@ export function CartPanel() {
             className="mt-1 min-h-12 text-base"
             disabled={items.length === 0}
             onClick={() => {
+              if (onRequireShift) {
+                onRequireShift();
+                return;
+              }
               setPaySession((n) => n + 1);
               setPayOpen(true);
             }}

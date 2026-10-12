@@ -26,6 +26,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
+import { NativeSelect } from "@/shared/ui/native-select";
 
 export interface UserRow {
   id: string;
@@ -58,20 +59,20 @@ function RoleSelect({
   // tidak sengaja membuat Admin karena urutan alfabet.
   const fallback = roles.find((r) => r.name === "Kasir")?.id ?? roles[0]?.id;
   return (
-    <select
+    <NativeSelect
       id={id}
       name="roleId"
       defaultValue={defaultValue ?? fallback}
       disabled={disabled}
       required
-      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+      className="flex h-11 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
     >
       {roles.map((role) => (
         <option key={role.id} value={role.id}>
           {role.name}
         </option>
       ))}
-    </select>
+    </NativeSelect>
   );
 }
 

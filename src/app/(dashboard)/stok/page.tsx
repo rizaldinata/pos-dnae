@@ -114,24 +114,25 @@ export default async function StockPage({
         <h1 className="text-2xl font-semibold">Stok</h1>
         <p className="text-sm text-muted-foreground">{total} varian</p>
       </div>
-      <div className="flex gap-2">
-        {canAdjust && (
-          <Button variant="outline" asChild className="min-h-11">
-            <Link href="/stok/opname">Stock opname</Link>
-          </Button>
-        )}
-      </div>
-
       <div className="flex flex-col gap-2">
         <ProductSearch initialQuery={query} />
-        <StockFilters
-          categories={categoriesResult.data.map((c) => ({
-            id: c.id,
-            name: c.name,
-          }))}
-          currentCategoryId={categoryId}
-          currentStatus={params.status ?? ""}
-        />
+        {/* Filter di kiri, tombol aksi sejajar rata kanan di baris yang sama
+            (ml-auto); saat wrap di layar sempit, tombol tetap rata kanan. */}
+        <div className="flex flex-wrap items-center gap-2">
+          <StockFilters
+            categories={categoriesResult.data.map((c) => ({
+              id: c.id,
+              name: c.name,
+            }))}
+            currentCategoryId={categoryId}
+            currentStatus={params.status ?? ""}
+          />
+          {canAdjust && (
+            <Button variant="outline" asChild className="ml-auto min-h-11">
+              <Link href="/stok/opname">Stock opname</Link>
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="rounded-md border">

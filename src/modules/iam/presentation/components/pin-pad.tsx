@@ -7,6 +7,7 @@ import {
 } from "@/modules/iam/presentation/actions/pin.action";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
+import { NativeSelect } from "@/shared/ui/native-select";
 
 const PAD_KEYS = [
   "1",
@@ -77,7 +78,7 @@ export function PinPad({
 
   return (
     <div className="flex flex-col gap-3">
-      <select
+      <NativeSelect
         aria-label="Pilih pengguna"
         value={selectedId}
         onChange={(e) => {
@@ -93,7 +94,7 @@ export function PinPad({
             {u.fullName} • {u.roleName}
           </option>
         ))}
-      </select>
+      </NativeSelect>
       <Input
         value={"•".repeat(pin.length)}
         readOnly

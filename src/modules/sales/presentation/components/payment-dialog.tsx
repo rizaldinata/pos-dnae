@@ -17,6 +17,7 @@ import { useCartStore } from "@/modules/sales/presentation/hooks/use-cart-store"
 import { useCartTotals } from "@/modules/sales/presentation/hooks/use-cart-totals";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
+import { NativeSelect } from "@/shared/ui/native-select";
 import {
   Dialog,
   DialogContent,
@@ -291,7 +292,7 @@ export function PaymentDialog({
                       <span className="text-xs font-medium text-muted-foreground">
                         #{index + 1}
                       </span>
-                      <select
+                      <NativeSelect
                         aria-label={`Metode bayar ${index + 1}`}
                         value={row.methodId}
                         onChange={(e) =>
@@ -305,7 +306,7 @@ export function PaymentDialog({
                             {m.name}
                           </option>
                         ))}
-                      </select>
+                      </NativeSelect>
                       {rows.length > 1 || isCredit ? (
                         <Button
                           type="button"

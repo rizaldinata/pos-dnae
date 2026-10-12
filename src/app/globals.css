@@ -127,6 +127,53 @@ option {
   color: var(--foreground);
 }
 
+/* Chevron dropdown (kelas dipakai komponen bersama <NativeSelect>):
+   panah native menempel di tepi kanan dan tak bisa digeser lewat padding,
+   jadi dimatikan (appearance: none) dan digambar ulang sebagai background —
+   ikon 16px, jarak 12px dari tepi kanan, sepadan dengan padding kiri teks.
+   Nilai hex = zinc-500 (terang) / zinc-400 (gelap) agar netral di tema
+   manapun. Padding kanan dijaga komponen lewat inline style. */
+@layer components {
+  .native-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px 16px;
+  }
+
+  .dark .native-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  }
+
+  /* Tanggal: glyph kalender bawaan Chrome diganti ikon kustom — ukuran dan
+     posisi persis chevron .native-select (16px, right 12px), termasuk varian
+     gelap. Indikator bawaan tetap ada namun dibuat transparan dan melebar
+     setinggi input sebagai zona klik supaya date picker tetap terbuka. */
+  input[type="date"] {
+    position: relative;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 2v4'/%3E%3Cpath d='M16 2v4'/%3E%3Crect width='18' height='18' x='3' y='4' rx='2'/%3E%3Cpath d='M3 10h18'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px 16px;
+  }
+
+  .dark input[type="date"] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 2v4'/%3E%3Cpath d='M16 2v4'/%3E%3Crect width='18' height='18' x='3' y='4' rx='2'/%3E%3Cpath d='M3 10h18'/%3E%3C/svg%3E");
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 2.5rem;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+}
+
 /* Struk thermal: saat cetak, hanya area struk yang terlihat (58/80mm). */
 @media print {
   body * {

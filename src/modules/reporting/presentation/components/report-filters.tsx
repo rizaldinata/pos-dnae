@@ -42,10 +42,12 @@ export function ReportFilters({
   }
 
   const inputClass =
-    "h-11 rounded-md border border-input bg-transparent px-3 text-sm";
+    "h-11 w-55 rounded-md border border-input bg-transparent px-3 text-sm";
 
   return (
-    <div className="flex flex-col gap-2">
+    // Satu baris horizontal: chip mode + input tanggal sebaris (wrap di
+    // layar sempit).
+    <div className="flex flex-wrap items-center gap-2">
       <div className="flex gap-1">
         {(["harian", "rentang", "bulanan"] as ReportMode[]).map((m) => (
           <Button
@@ -63,7 +65,7 @@ export function ReportFilters({
         <Input
           type="date"
           aria-label="Tanggal"
-          className={`${inputClass} max-w-55`}
+          className={inputClass}
           value={date}
           onChange={(e) => navigate({ date: e.target.value })}
         />

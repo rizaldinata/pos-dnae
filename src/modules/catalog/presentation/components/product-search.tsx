@@ -43,7 +43,7 @@ export function ProductSearch({ initialQuery }: { initialQuery: string }) {
       value={value}
       onChange={(e) => setValue(e.target.value)}
       placeholder="Cari nama, SKU, atau barcode..."
-      className="min-h-11 max-w-sm"
+      className="min-h-11 w-full"
       aria-label="Cari produk"
     />
   );

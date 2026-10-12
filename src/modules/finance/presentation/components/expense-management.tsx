@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, type ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   createExpenseCategoryAction,
@@ -14,6 +14,7 @@ import {
 import { formatRupiah } from "@/shared/lib/format-rupiah";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
+import { NativeSelect } from "@/shared/ui/native-select";
 import {
   Table,
   TableBody,
@@ -82,7 +83,7 @@ function ExpenseFields({
           <label htmlFor="expense-category" className="text-sm font-medium">
             Kategori
           </label>
-          <select
+          <NativeSelect
             id="expense-category"
             name="categoryId"
             defaultValue={expense?.categoryId ?? ""}
@@ -96,7 +97,7 @@ function ExpenseFields({
                 {c.name}
               </option>
             ))}
-          </select>
+          </NativeSelect>
         </div>
       </div>
 
@@ -219,7 +220,7 @@ function CategoryManager({
                         minLength={2}
                         maxLength={60}
                         disabled={pending}
-                        className="min-h-9"
+                        className="min-h-11"
                       />
                       <Button
                         type="submit"
@@ -289,12 +290,15 @@ export function ExpenseManagement({
   total,
   page,
   pageSize,
+  filters,
 }: {
   expenses: ExpenseDTO[];
   categories: ExpenseCategoryDTO[];
   total: number;
   page: number;
   pageSize: number;
+  /** Slot filter tanggal/kategori di bawah judul — disusun oleh pemanggil. */
+  filters?: ReactNode;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -354,14 +358,18 @@ export function ExpenseManagement({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-semibold">Pengeluaran operasional</h1>
-          <p className="text-sm text-muted-foreground">
-            Catatan kas keluar di luar transaksi (FIN-01)
-          </p>
-        </div>
-        <div className="flex gap-2">
+      <div>
+        <h1 className="text-2xl font-semibold">Pengeluaran operasional</h1>
+        <p className="text-sm text-muted-foreground">
+          Catatan kas keluar di luar transaksi
+        </p>
+      </div>
+
+      {/* Satu baris horizontal: filter tanggal/kategori di kiri, tombol aksi
+          rata kanan (ml-auto); wrap tetap rata kanan di layar sempit. */}
+      <div className="flex flex-wrap items-center gap-2">
+        {filters}
+        <div className="ml-auto flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             className="min-h-11"

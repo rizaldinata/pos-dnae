@@ -165,7 +165,7 @@ export function BundleItemsEditor({
                   type="button"
                   onClick={() => addVariant(r)}
                   disabled={pending}
-                  className="flex min-h-10 w-full items-center justify-between rounded-md px-2 text-left text-sm hover:bg-accent"
+                  className="flex min-h-11 w-full items-center justify-between rounded-md px-2 text-left text-sm hover:bg-accent"
                 >
                   <span className="truncate">
                     {r.productName}
@@ -217,7 +217,7 @@ export function BundleItemsEditor({
                       )
                     )
                   }
-                  className="h-9 w-20 text-right"
+                  className="h-11 w-20 text-right"
                   aria-label={`Qty ${item.label}`}
                 />
               </label>

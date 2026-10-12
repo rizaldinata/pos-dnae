@@ -21,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/ui/table";
+import { NativeSelect } from "@/shared/ui/native-select";
 import { generateEan13 } from "@/modules/catalog/domain/services/barcode";
 
 export interface VariantTierRow {
@@ -390,7 +391,7 @@ export function ProductForm({
               <label htmlFor="product-category" className={labelClass}>
                 Kategori
               </label>
-              <select
+              <NativeSelect
                 id="product-category"
                 className={selectClass}
                 value={categoryId}
@@ -403,13 +404,13 @@ export function ProductForm({
                     {c.name}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
             <div className="flex flex-col gap-2">
               <label htmlFor="product-brand" className={labelClass}>
                 Brand
               </label>
-              <select
+              <NativeSelect
                 id="product-brand"
                 className={selectClass}
                 value={brandId}
@@ -422,13 +423,13 @@ export function ProductForm({
                     {b.name}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
             <div className="flex flex-col gap-2">
               <label htmlFor="product-unit" className={labelClass}>
                 Satuan
               </label>
-              <select
+              <NativeSelect
                 id="product-unit"
                 className={selectClass}
                 value={unitId}
@@ -442,7 +443,7 @@ export function ProductForm({
                     {u.shortName ? ` (${u.shortName})` : ""}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
           </div>
           <div className="flex flex-col gap-2">

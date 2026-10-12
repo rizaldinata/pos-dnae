@@ -70,9 +70,6 @@ export default async function ExpensePage({
     id: c.id,
     name: c.name,
   }));
-  const categoryNames = Object.fromEntries(
-    categories.map((c) => [c.id, c.name])
-  );
 
   const expenses: ExpenseDTO[] = expensesResult.data.items.map((expense) => ({
     id: expense.id,
@@ -85,23 +82,16 @@ export default async function ExpensePage({
   return (
     <div className="flex flex-col gap-4">
       <FinanceNav permissions={guard.user.permissions} />
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-semibold">Keuangan</h1>
-          <p className="text-sm text-muted-foreground">
-            {dateFrom} s/d {dateTo}
-            {categoryId ? ` — ${categoryNames[categoryId] ?? ""}` : ""}
-          </p>
-        </div>
-        <OperationalFilters
-          dateFrom={dateFrom}
-          dateTo={dateTo}
-          categories={categories}
-          currentCategoryId={categoryId}
-          showCategory
-        />
-      </div>
       <ExpenseManagement
+        filters={
+          <OperationalFilters
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            categories={categories}
+            currentCategoryId={categoryId}
+            showCategory
+          />
+        }
         expenses={expenses}
         categories={categories}
         total={expensesResult.data.total}

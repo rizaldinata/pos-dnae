@@ -99,51 +99,54 @@ export default async function ProductsPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-semibold">Produk</h1>
-          <p className="text-sm text-muted-foreground">
-            {total} produk{query ? ` untuk "${query}"` : ""}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" asChild className="min-h-11">
-            <Link href="/produk/kategori">Kategori</Link>
-          </Button>
-          <Button variant="outline" asChild className="min-h-11">
-            <Link href="/produk/impor">Impor</Link>
-          </Button>
-          <Button variant="outline" asChild className="min-h-11">
-            <Link href="/produk/label">Cetak Label</Link>
-          </Button>
-          <Button asChild className="min-h-11">
-            <Link href="/produk/baru">Tambah produk</Link>
-          </Button>
-          <ExportButtons
-            type="produk"
-            csv
-            query={{
-              q: query || undefined,
-              categoryId: categoryId || undefined,
-              brandId: brandId || undefined,
-              status: status || undefined,
-            }}
-          />
-        </div>
+      <div>
+        <h1 className="text-2xl font-semibold">Produk</h1>
+        <p className="text-sm text-muted-foreground">
+          {total} produk{query ? ` untuk "${query}"` : ""}
+        </p>
       </div>
 
       <div className="flex flex-col gap-2">
         <ProductSearch initialQuery={query} />
-        <ProductFilters
-          categories={categoriesResult.data.map((c) => ({
-            id: c.id,
-            name: c.name,
-          }))}
-          brands={brandsResult.data.map((b) => ({ id: b.id, name: b.name }))}
-          currentCategoryId={categoryId}
-          currentBrandId={brandId}
-          currentStatus={status}
-        />
+        {/* Filter di kiri, tombol aksi sejajar rata kanan di baris yang sama
+            (ml-auto); saat wrap di layar sempit, tombol tetap rata kanan.
+            Tambah produk sengaja paling kanan — satu-satunya non-outline. */}
+        <div className="flex flex-wrap items-center gap-2">
+          <ProductFilters
+            categories={categoriesResult.data.map((c) => ({
+              id: c.id,
+              name: c.name,
+            }))}
+            brands={brandsResult.data.map((b) => ({ id: b.id, name: b.name }))}
+            currentCategoryId={categoryId}
+            currentBrandId={brandId}
+            currentStatus={status}
+          />
+          <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+            <Button variant="outline" asChild className="min-h-11">
+              <Link href="/produk/kategori">Kategori</Link>
+            </Button>
+            <Button variant="outline" asChild className="min-h-11">
+              <Link href="/produk/impor">Impor</Link>
+            </Button>
+            <Button variant="outline" asChild className="min-h-11">
+              <Link href="/produk/label">Cetak Label</Link>
+            </Button>
+            <ExportButtons
+              type="produk"
+              csv
+              query={{
+                q: query || undefined,
+                categoryId: categoryId || undefined,
+                brandId: brandId || undefined,
+                status: status || undefined,
+              }}
+            />
+            <Button asChild className="min-h-11">
+              <Link href="/produk/baru">Tambah produk</Link>
+            </Button>
+          </div>
+        </div>
       </div>
 
       <div className="rounded-md border">

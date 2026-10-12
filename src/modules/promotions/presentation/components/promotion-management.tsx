@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import {
   createPromotionAction,
   togglePromotionAction,
@@ -14,6 +15,7 @@ import { Money } from "@/shared/lib/money";
 import { formatDateJakarta } from "@/shared/lib/date";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
+import { NativeSelect } from "@/shared/ui/native-select";
 import {
   Table,
   TableBody,
@@ -100,7 +102,7 @@ function ScopeRefField({
         <label htmlFor="promo-scope-ref" className="text-sm font-medium">
           Kategori
         </label>
-        <select
+        <NativeSelect
           id="promo-scope-ref"
           name="scopeRefId"
           defaultValue={defaultId}
@@ -114,7 +116,7 @@ function ScopeRefField({
               {c.name}
             </option>
           ))}
-        </select>
+        </NativeSelect>
       </div>
     );
   }
@@ -215,7 +217,7 @@ function PromotionFields({
           <label htmlFor="promo-type" className="text-sm font-medium">
             Tipe
           </label>
-          <select
+          <NativeSelect
             id="promo-type"
             name="type"
             defaultValue={type}
@@ -225,13 +227,13 @@ function PromotionFields({
             <option value="percent">Diskon persen</option>
             <option value="amount">Diskon nominal</option>
             <option value="bogo">Beli gratis (BOGO)</option>
-          </select>
+          </NativeSelect>
         </div>
         <div className="flex flex-col gap-2">
           <label htmlFor="promo-scope" className="text-sm font-medium">
             Berlaku untuk
           </label>
-          <select
+          <NativeSelect
             id="promo-scope"
             name="scope"
             defaultValue={scope}
@@ -241,7 +243,7 @@ function PromotionFields({
             <option value="all">Semua produk</option>
             <option value="category">Kategori tertentu</option>
             <option value="product">Produk tertentu</option>
-          </select>
+          </NativeSelect>
         </div>
       </div>
 
@@ -402,22 +404,27 @@ export function PromotionManagement({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-2xl font-semibold">Promo</h1>
           <p className="text-sm text-muted-foreground">
             Diskon otomatis yang berlaku di layar kasir
           </p>
         </div>
-        <Button
-          className="min-h-11"
-          onClick={() => {
-            setState(initialState);
-            setCreateOpen(true);
-          }}
-        >
-          Tambah promo
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" asChild className="min-h-11">
+            <Link href="/promo/voucher">Kelola voucher</Link>
+          </Button>
+          <Button
+            className="min-h-11"
+            onClick={() => {
+              setState(initialState);
+              setCreateOpen(true);
+            }}
+          >
+            Tambah promo
+          </Button>
+        </div>
       </div>
 
       {state.message && (

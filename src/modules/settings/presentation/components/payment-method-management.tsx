@@ -26,6 +26,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
+import { NativeSelect } from "@/shared/ui/native-select";
 
 export interface PaymentMethodRow {
   id: string;
@@ -205,7 +206,7 @@ export function PaymentMethodManagement({
               <label htmlFor="pm-type" className="text-sm font-medium">
                 Tipe
               </label>
-              <select
+              <NativeSelect
                 id="pm-type"
                 name="type"
                 className={selectClass}
@@ -217,7 +218,7 @@ export function PaymentMethodManagement({
                     {label}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
             <DialogFooter>
               <Button type="submit" disabled={pending} loading={pending}>
@@ -262,7 +263,7 @@ export function PaymentMethodManagement({
                 <label htmlFor="pm-edit-type" className="text-sm font-medium">
                   Tipe
                 </label>
-                <select
+                <NativeSelect
                   id="pm-edit-type"
                   name="type"
                   className={selectClass}
@@ -274,7 +275,7 @@ export function PaymentMethodManagement({
                       {label}
                     </option>
                   ))}
-                </select>
+                </NativeSelect>
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={pending} loading={pending}>

@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/shared/ui/input";
+import { NativeSelect } from "@/shared/ui/native-select";
 
 export function OperationalFilters({
   dateFrom,
@@ -34,8 +35,10 @@ export function OperationalFilters({
     });
   }
 
+  // w-55: lebar deterministik — Input bawaan ber-class w-full, tanpa ini
+  // setiap input memaksa baris sendiri dan filter pecah bertumpuk.
   const inputClass =
-    "h-11 rounded-md border border-input bg-transparent px-3 text-sm";
+    "h-11 w-55 rounded-md border border-input bg-transparent px-3 text-sm";
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -55,7 +58,7 @@ export function OperationalFilters({
         onChange={(e) => navigate("to", e.target.value)}
       />
       {showCategory && (
-        <select
+        <NativeSelect
           aria-label="Filter kategori"
           className="flex h-11 rounded-md border border-input bg-transparent px-3 py-1 text-sm"
           value={currentCategoryId}
@@ -67,7 +70,7 @@ export function OperationalFilters({
               {c.name}
             </option>
           ))}
-        </select>
+        </NativeSelect>
       )}
     </div>
   );

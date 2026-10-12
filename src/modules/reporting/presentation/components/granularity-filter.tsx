@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ProfitGranularity } from "@/modules/reporting/domain/entities/advanced-report";
+import { NativeSelect } from "@/shared/ui/native-select";
 
 const OPTIONS: { value: ProfitGranularity; label: string }[] = [
   { value: "day", label: "Harian" },
@@ -31,7 +32,7 @@ export function GranularityFilter({ value }: { value: ProfitGranularity }) {
   }
 
   return (
-    <select
+    <NativeSelect
       aria-label="Granularitas periode"
       className="flex h-11 rounded-md border border-input bg-transparent px-3 py-1 text-sm"
       value={value}
@@ -42,6 +43,6 @@ export function GranularityFilter({ value }: { value: ProfitGranularity }) {
           {o.label}
         </option>
       ))}
-    </select>
+    </NativeSelect>
   );
 }

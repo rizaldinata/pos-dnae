@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/shared/ui/input";
+import { NativeSelect } from "@/shared/ui/native-select";
 
 export function AuditLogFilters({
   actions,
@@ -38,7 +39,7 @@ export function AuditLogFilters({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <select
+      <NativeSelect
         aria-label="Filter aksi"
         className="flex h-11 rounded-md border border-input bg-transparent px-3 py-1 text-sm"
         value={currentAction}
@@ -50,7 +51,7 @@ export function AuditLogFilters({
             {action}
           </option>
         ))}
-      </select>
+      </NativeSelect>
       <Input
         type="date"
         aria-label="Tanggal mulai"

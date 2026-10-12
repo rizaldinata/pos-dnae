@@ -98,7 +98,7 @@ export function RedeemField() {
           }}
           placeholder="Jumlah poin"
           disabled={pending}
-          className="h-9 flex-1 text-sm"
+          className="h-11 flex-1 text-sm"
           autoComplete="off"
         />
         <Button

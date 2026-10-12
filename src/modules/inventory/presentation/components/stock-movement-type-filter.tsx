@@ -7,6 +7,7 @@ import {
   movementTypeLabel,
   type StockMovementType,
 } from "@/modules/inventory/domain/entities/stock";
+import { NativeSelect } from "@/shared/ui/native-select";
 
 export function StockMovementTypeFilter({
   currentType,
@@ -32,7 +33,7 @@ export function StockMovementTypeFilter({
   }
 
   return (
-    <select
+    <NativeSelect
       aria-label="Filter tipe pergerakan"
       className="flex h-11 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
       value={currentType}
@@ -44,6 +45,6 @@ export function StockMovementTypeFilter({
           {movementTypeLabel(t as StockMovementType)}
         </option>
       ))}
-    </select>
+    </NativeSelect>
   );
 }

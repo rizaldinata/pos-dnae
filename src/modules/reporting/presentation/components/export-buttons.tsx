@@ -76,7 +76,7 @@ export function ExportButtons({
       <div className="flex flex-wrap gap-2">
         <Button
           variant="outline"
-          size="sm"
+          className="min-h-11"
           disabled={pending !== null}
           onClick={() => download("excel")}
         >
@@ -85,7 +85,7 @@ export function ExportButtons({
         {csv && (
           <Button
             variant="outline"
-            size="sm"
+            className="min-h-11"
             disabled={pending !== null}
             onClick={() => download("csv")}
           >
@@ -95,7 +95,7 @@ export function ExportButtons({
         {pdf && (
           <Button
             variant="outline"
-            size="sm"
+            className="min-h-11"
             disabled={pending !== null}
             onClick={() => download("pdf")}
           >

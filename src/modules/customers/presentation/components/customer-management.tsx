@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import {
   createCustomerAction,
   deleteCustomerAction,
@@ -8,6 +9,7 @@ import {
   type CustomerActionState,
   type CustomerDTO,
 } from "@/modules/customers/presentation/actions/customer.action";
+import { CustomerSearch } from "@/modules/customers/presentation/components/customer-search";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Badge } from "@/shared/ui/badge";
@@ -111,8 +113,10 @@ function CustomerFields({
 
 export function CustomerManagement({
   customers,
+  initialQuery,
 }: {
   customers: CustomerDTO[];
+  initialQuery: string;
 }) {
   const [createOpen, setCreateOpen] = useState(false);
   const [editing, setEditing] = useState<CustomerDTO | null>(null);
@@ -152,11 +156,19 @@ export function CustomerManagement({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Pelanggan</h1>
-          <p className="text-sm text-muted-foreground">Data pelanggan toko</p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-semibold">Pelanggan</h1>
+        <p className="text-sm text-muted-foreground">Data pelanggan toko</p>
+      </div>
+
+      <CustomerSearch initialQuery={initialQuery} />
+
+      {/* Aksi di bawah search, rata kanan; Tambah pelanggan (tombol utama,
+          warnanya beda) paling kanan. */}
+      <div className="flex flex-wrap justify-end gap-2">
+        <Button variant="outline" asChild className="min-h-11">
+          <Link href="/pelanggan/piutang">Piutang</Link>
+        </Button>
         <Button
           onClick={() => {
             setState(initialState);

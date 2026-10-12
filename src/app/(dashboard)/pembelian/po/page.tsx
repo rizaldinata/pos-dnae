@@ -58,12 +58,31 @@ export default async function POListPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-semibold">Purchase Order</h1>
-          <p className="text-sm text-muted-foreground">{total} PO</p>
+      <div>
+        <h1 className="text-2xl font-semibold">Purchase Order</h1>
+        <p className="text-sm text-muted-foreground">{total} PO</p>
+      </div>
+
+      {/* Satu baris horizontal: filter status di kiri, tombol aksi rata kanan
+          (ml-auto); wrap tetap rata kanan di layar sempit. */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap gap-2">
+          {["", "draft", "sent", "partial", "completed", "cancelled"].map(
+            (s) => (
+              <Button
+                key={s}
+                variant={status === s ? "default" : "outline"}
+                size="sm"
+                asChild
+              >
+                <Link href={`/pembelian/po${s ? `?status=${s}` : ""}`}>
+                  {s === "" ? "Semua" : STATUS_LABEL[s]}
+                </Link>
+              </Button>
+            )
+          )}
         </div>
-        <div className="flex gap-2">
+        <div className="ml-auto flex flex-wrap items-center gap-2">
           <Button variant="outline" asChild className="min-h-11">
             <Link href="/pembelian/supplier">Supplier</Link>
           </Button>
@@ -77,21 +96,6 @@ export default async function POListPage({
             <Link href="/pembelian/po/baru">Buat PO</Link>
           </Button>
         </div>
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        {["", "draft", "sent", "partial", "completed", "cancelled"].map((s) => (
-          <Button
-            key={s}
-            variant={status === s ? "default" : "outline"}
-            size="sm"
-            asChild
-          >
-            <Link href={`/pembelian/po${s ? `?status=${s}` : ""}`}>
-              {s === "" ? "Semua" : STATUS_LABEL[s]}
-            </Link>
-          </Button>
-        ))}
       </div>
 
       <div className="rounded-md border">

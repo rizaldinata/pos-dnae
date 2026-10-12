@@ -5,7 +5,6 @@ import { requirePermission } from "@/modules/iam/presentation/actions/require-pe
 import { isErr } from "@/shared/kernel/result";
 import { Button } from "@/shared/ui/button";
 import { CustomerManagement } from "@/modules/customers/presentation/components/customer-management";
-import { CustomerSearch } from "@/modules/customers/presentation/components/customer-search";
 
 export const dynamic = "force-dynamic";
 
@@ -43,15 +42,8 @@ export default async function CustomersPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex-1">
-          <CustomerSearch initialQuery={query} />
-        </div>
-        <Button variant="outline" asChild className="min-h-11">
-          <Link href="/pelanggan/piutang">Piutang</Link>
-        </Button>
-      </div>
       <CustomerManagement
+        initialQuery={query}
         customers={items.map((c) => ({
           id: c.id,
           name: c.name,

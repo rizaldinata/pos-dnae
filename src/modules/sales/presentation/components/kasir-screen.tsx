@@ -18,6 +18,7 @@ import {
 } from "@/modules/shifts/presentation/actions/shift.action";
 import { getActivePromotionsAction } from "@/modules/promotions/presentation/actions/promotion.action";
 import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import { formatRupiah } from "@/shared/lib/format-rupiah";
 
 function formatDuration(sinceIso: string, now: number): string {
@@ -52,10 +53,18 @@ export function KasirScreen({
   const setPromotions = useCartStore((s) => s.setPromotions);
   const [shift, setShift] = useState<ShiftDTO | null>(initialShift);
   const [now, setNow] = useState(() => Date.now());
+  // Dialog buka shift: terbuka otomatis saat halaman dimulai tanpa shift,
+  // sesudah tutup shift (lihat refreshShift), atau saat diminta (tombol
+  // "Buka shift" / Bayar). Pengguna tetap bisa menutupnya (ESC/✕/klik luar)
+  // untuk bebas navigasi — kewajiban shift tetap dijaga server saat checkout.
+  const [shiftDialogOpen, setShiftDialogOpen] = useState(initialShift === null);
 
   const refreshShift = useCallback(async () => {
     const current = await getCurrentShiftAction();
     setShift(current);
+    // Shift berakhir (mis. sesudah tutup shift) → langsung tawarkan buka
+    // shift baru; kalau masih terbuka, tidak ada yang berubah.
+    setShiftDialogOpen(current === null);
   }, []);
 
   useEffect(() => {
@@ -102,6 +111,11 @@ export function KasirScreen({
               {formatRupiah(shift.openingCash)}
             </Badge>
           )}
+          {needsShift && (
+            <Button size="sm" onClick={() => setShiftDialogOpen(true)}>
+              Buka shift
+            </Button>
+          )}
           {shift && (
             <div className="flex gap-2">
               <CashMovementDialog
@@ -124,10 +138,18 @@ export function KasirScreen({
         </div>
       </section>
       <section className="flex min-h-0 flex-1 lg:basis-2/5">
-        <CartPanel />
+        <CartPanel
+          onRequireShift={
+            needsShift ? () => setShiftDialogOpen(true) : undefined
+          }
+        />
       </section>
       {needsShift && (
-        <OpenShiftDialog forced={true} onOpened={(s) => setShift(s)} />
+        <OpenShiftDialog
+          open={shiftDialogOpen}
+          onOpenChange={setShiftDialogOpen}
+          onOpened={(s) => setShift(s)}
+        />
       )}
     </div>
   );

@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { recordSupplierPaymentAction } from "@/modules/purchasing/presentation/actions/debt.action";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
+import { NativeSelect } from "@/shared/ui/native-select";
 import { Badge } from "@/shared/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import {
@@ -179,7 +180,7 @@ export function SupplierDebtManagement({ debts }: { debts: DebtRow[] }) {
                 <label htmlFor="debt-method" className="text-sm font-medium">
                   Metode
                 </label>
-                <select
+                <NativeSelect
                   id="debt-method"
                   value={method}
                   onChange={(e) => setMethod(e.target.value)}
@@ -193,7 +194,7 @@ export function SupplierDebtManagement({ debts }: { debts: DebtRow[] }) {
                       </option>
                     )
                   )}
-                </select>
+                </NativeSelect>
               </div>
             </div>
             <div className="flex gap-2">

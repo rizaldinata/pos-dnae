@@ -59,7 +59,7 @@ export function CustomerPicker() {
         <Button
           variant="ghost"
           size="icon"
-          className="ml-auto h-8 w-8"
+          className="ml-auto"
           aria-label="Lepas pelanggan"
           onClick={clearCustomer}
         >

@@ -10,6 +10,7 @@ import {
 import { formatDateJakarta } from "@/shared/lib/date";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
+import { NativeSelect } from "@/shared/ui/native-select";
 import {
   Table,
   TableBody,
@@ -95,7 +96,7 @@ function VoucherFields({ disabled }: { disabled?: boolean }) {
           <label htmlFor="voucher-type" className="text-sm font-medium">
             Tipe
           </label>
-          <select
+          <NativeSelect
             id="voucher-type"
             name="type"
             value={type}
@@ -105,7 +106,7 @@ function VoucherFields({ disabled }: { disabled?: boolean }) {
           >
             <option value="percent">Diskon persen</option>
             <option value="amount">Diskon nominal</option>
-          </select>
+          </NativeSelect>
         </div>
         <div className="flex flex-col gap-2">
           <label htmlFor="voucher-value" className="text-sm font-medium">

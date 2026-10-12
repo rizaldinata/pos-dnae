@@ -16,16 +16,25 @@ import {
 import { formatRupiah } from "@/shared/lib/format-rupiah";
 
 export function OpenShiftDialog({
-  forced,
+  open,
+  onOpenChange,
   onOpened,
 }: {
-  forced: boolean;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onOpened: (shift: ShiftDTO) => void;
 }) {
-  const [open, setOpen] = useState(forced);
   const [modal, setModal] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  function handleOpenChange(next: boolean) {
+    if (!next) {
+      // Pesan error tidak usah dibawa ke sesi berikutnya.
+      setMessage(null);
+    }
+    onOpenChange(next);
+  }
 
   function handleOpen() {
     startTransition(async () => {
@@ -34,21 +43,14 @@ export function OpenShiftDialog({
         setMessage(result.message ?? "Gagal membuka shift");
         return;
       }
-      setOpen(false);
+      onOpenChange(false);
       onOpened(result.shift);
     });
   }
 
   return (
-    <Dialog
-      open={forced || open}
-      onOpenChange={(isOpen) => {
-        if (!forced) {
-          setOpen(isOpen);
-        }
-      }}
-    >
-      <DialogContent onPointerDownOutside={(e) => forced && e.preventDefault()}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Buka shift kasir</DialogTitle>
           <DialogDescription>

@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { NativeSelect } from "@/shared/ui/native-select";
 
 interface FilterOption {
   id: string;
@@ -48,7 +49,7 @@ export function ProductFilters({
 
   return (
     <div className="flex flex-wrap gap-2">
-      <select
+      <NativeSelect
         aria-label="Filter kategori"
         className={selectClass}
         value={currentCategoryId}
@@ -60,8 +61,8 @@ export function ProductFilters({
             {c.name}
           </option>
         ))}
-      </select>
-      <select
+      </NativeSelect>
+      <NativeSelect
         aria-label="Filter brand"
         className={selectClass}
         value={currentBrandId}
@@ -73,8 +74,8 @@ export function ProductFilters({
             {b.name}
           </option>
         ))}
-      </select>
-      <select
+      </NativeSelect>
+      <NativeSelect
         aria-label="Filter status"
         className={selectClass}
         value={currentStatus}
@@ -83,7 +84,7 @@ export function ProductFilters({
         <option value="">Semua status</option>
         <option value="aktif">Aktif</option>
         <option value="nonaktif">Nonaktif</option>
-      </select>
+      </NativeSelect>
     </div>
   );
 }

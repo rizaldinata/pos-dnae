@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
+import { NativeSelect } from "@/shared/ui/native-select";
 
 export function CreateOpnameDialog({
   categories,
@@ -49,7 +50,7 @@ export function CreateOpnameDialog({
             <label htmlFor="opname-scope" className="text-sm font-medium">
               Cakupan produk
             </label>
-            <select
+            <NativeSelect
               id="opname-scope"
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
@@ -62,7 +63,7 @@ export function CreateOpnameDialog({
                   {c.name}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
             <p className="text-xs text-muted-foreground">
               Stok sistem saat ini disalin sebagai pembanding (snapshot).
             </p>

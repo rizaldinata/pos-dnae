@@ -7,6 +7,7 @@ import { searchProductsPOSAction } from "@/modules/sales/presentation/actions/po
 import type { POSVariant } from "@/modules/sales/application/use-cases/search-products-pos.use-case";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
+import { NativeSelect } from "@/shared/ui/native-select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { formatRupiah } from "@/shared/lib/format-rupiah";
 
@@ -114,7 +115,7 @@ export function POForm({
               <label htmlFor="po-supplier" className="text-sm font-medium">
                 Supplier
               </label>
-              <select
+              <NativeSelect
                 id="po-supplier"
                 value={supplierId}
                 onChange={(e) => setSupplierId(e.target.value)}
@@ -126,7 +127,7 @@ export function POForm({
                     {s.name}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
             <div className="flex flex-col gap-2">
               <label htmlFor="po-notes" className="text-sm font-medium">

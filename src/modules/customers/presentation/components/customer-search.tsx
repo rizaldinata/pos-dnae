@@ -50,7 +50,7 @@ export function CustomerSearch({ initialQuery }: { initialQuery: string }) {
       value={value}
       onChange={(e) => handleChange(e.target.value)}
       placeholder="Cari nama, telepon, atau email..."
-      className="min-h-11 max-w-sm"
+      className="min-h-11 w-full"
       aria-label="Cari pelanggan"
     />
   );

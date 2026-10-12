@@ -122,14 +122,23 @@ export default async function SalesReportPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-semibold">Laporan Penjualan</h1>
-          <p className="text-sm text-muted-foreground">
-            Periode: {report.label}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
+      <div>
+        <h1 className="text-2xl font-semibold">Laporan Penjualan</h1>
+        <p className="text-sm text-muted-foreground">Periode: {report.label}</p>
+      </div>
+
+      {/* Satu baris horizontal: filter laporan di kiri, tombol navigasi +
+          ekspor rata kanan (ml-auto); wrap tetap rata kanan di layar sempit. */}
+      <div className="flex flex-wrap items-center gap-2">
+        <ReportFilters
+          mode={mode}
+          date={date}
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          year={year}
+          month={month}
+        />
+        <div className="ml-auto flex flex-wrap items-center gap-2">
           <Button variant="outline" asChild className="min-h-11">
             <Link href="/laporan/shift">Rekap Shift</Link>
           </Button>
@@ -165,15 +174,6 @@ export default async function SalesReportPage({
           />
         </div>
       </div>
-
-      <ReportFilters
-        mode={mode}
-        date={date}
-        dateFrom={dateFrom}
-        dateTo={dateTo}
-        year={year}
-        month={month}
-      />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card>

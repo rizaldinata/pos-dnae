@@ -1,9 +1,7 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAppContainer } from "@/di/container";
 import { requirePermission } from "@/modules/iam/presentation/actions/require-permission";
 import { isErr } from "@/shared/kernel/result";
-import { Button } from "@/shared/ui/button";
 import { PromotionManagement } from "@/modules/promotions/presentation/components/promotion-management";
 
 export const dynamic = "force-dynamic";
@@ -51,11 +49,6 @@ export default async function PromotionsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-end gap-2">
-        <Button variant="outline" asChild className="min-h-11">
-          <Link href="/promo/voucher">Kelola voucher</Link>
-        </Button>
-      </div>
       <PromotionManagement
         promotions={promotionsResult.data.map((promo) => ({
           id: promo.id,

@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { NativeSelect } from "@/shared/ui/native-select";
 
 export function StockFilters({
   categories,
@@ -35,7 +36,7 @@ export function StockFilters({
 
   return (
     <div className="flex flex-wrap gap-2">
-      <select
+      <NativeSelect
         aria-label="Filter kategori"
         className={selectClass}
         value={currentCategoryId}
@@ -47,8 +48,8 @@ export function StockFilters({
             {c.name}
           </option>
         ))}
-      </select>
-      <select
+      </NativeSelect>
+      <NativeSelect
         aria-label="Filter status stok"
         className={selectClass}
         value={currentStatus}
@@ -58,7 +59,7 @@ export function StockFilters({
         <option value="normal">Normal</option>
         <option value="menipis">Menipis</option>
         <option value="habis">Habis</option>
-      </select>
+      </NativeSelect>
     </div>
   );
 }

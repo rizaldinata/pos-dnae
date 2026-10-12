@@ -82,7 +82,7 @@ export function VoucherField({ baseAmount }: { baseAmount: number }) {
         }}
         placeholder="Kode voucher"
         disabled={pending}
-        className="h-9 flex-1 text-sm uppercase"
+        className="h-11 flex-1 text-sm uppercase"
         autoComplete="off"
       />
       <Button
