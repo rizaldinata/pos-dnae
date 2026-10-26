@@ -4,6 +4,7 @@ export const STORE_SETTING_KEYS = [
   "store.phone",
   "store.logo_url",
   "receipt.footer",
+  "payment.qris_image_url",
 ] as const;
 
 export type StoreSettingKey = (typeof STORE_SETTING_KEYS)[number];
@@ -18,6 +19,8 @@ export interface StoreSettings {
   storePhone: string;
   storeLogoUrl: string;
   receiptFooter: string;
+  /** Path/URL gambar QRIS toko (bucket store-assets); kosong bila belum diatur. */
+  qrisImageUrl: string;
 }
 
 export const DEFAULT_STORE_SETTINGS: StoreSettings = {
@@ -26,6 +29,7 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
   storePhone: "0812-0000-0000",
   storeLogoUrl: "",
   receiptFooter: "Terima kasih telah berbelanja.",
+  qrisImageUrl: "",
 };
 
 export function mapRecordToStoreSettings(
@@ -41,5 +45,9 @@ export function mapRecordToStoreSettings(
     storePhone: pick("store.phone", DEFAULT_STORE_SETTINGS.storePhone),
     storeLogoUrl: pick("store.logo_url", DEFAULT_STORE_SETTINGS.storeLogoUrl),
     receiptFooter: pick("receipt.footer", DEFAULT_STORE_SETTINGS.receiptFooter),
+    qrisImageUrl: pick(
+      "payment.qris_image_url",
+      DEFAULT_STORE_SETTINGS.qrisImageUrl
+    ),
   };
 }

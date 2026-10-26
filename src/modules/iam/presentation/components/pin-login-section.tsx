@@ -38,7 +38,7 @@ export function PinLoginSection() {
         <PinPad
           users={users}
           onSuccess={() => {
-            router.push("/");
+            router.push("/dasbor");
             router.refresh();
           }}
         />

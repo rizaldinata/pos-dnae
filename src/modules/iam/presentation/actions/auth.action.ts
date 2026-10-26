@@ -22,7 +22,7 @@ export async function loginAction(
     return { message: result.error.message };
   }
 
-  redirect("/");
+  redirect("/dasbor");
 }
 
 export async function logoutAction(): Promise<void> {

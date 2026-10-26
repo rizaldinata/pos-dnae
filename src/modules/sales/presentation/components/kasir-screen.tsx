@@ -4,6 +4,7 @@ import { useCallback, useEffect, startTransition, useState } from "react";
 import { useCartStore } from "@/modules/sales/presentation/hooks/use-cart-store";
 import { POSProductSearch } from "@/modules/sales/presentation/components/pos-product-search";
 import { CustomerPicker } from "@/modules/sales/presentation/components/customer-picker";
+import { CustomerPhoneField } from "@/modules/sales/presentation/components/customer-phone-field";
 import {
   HoldButton,
   HeldSalesDialog,
@@ -127,8 +128,9 @@ export function KasirScreen({
           )}
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto pr-1">
-          <div className="mb-3">
+          <div className="mb-3 flex flex-col gap-2">
             <CustomerPicker />
+            <CustomerPhoneField />
           </div>
           <div className="mb-3 flex gap-2">
             <HoldButton />

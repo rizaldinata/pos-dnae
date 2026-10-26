@@ -54,6 +54,14 @@ export const CheckoutSchema = z.object({
     .optional()
     .default([]),
   customerId: z.uuid({ error: "ID pelanggan tidak valid" }).nullish(),
+  // No. HP (WhatsApp) tujuan notifikasi struk — diinput opsional oleh kasir.
+  // Format longgar (spasi/strip/kurung boleh); normalisasi ke chatId WhatsApp
+  // dilakukan saat pengiriman (WahaReceiptSender).
+  customerPhone: z
+    .string()
+    .trim()
+    .regex(/^\+?[\d\s\-()]{8,25}$/, { error: "Nomor HP tidak valid" })
+    .nullish(),
   idempotencyKey: z.uuid({ error: "Idempotency key tidak valid" }).optional(),
 });
 

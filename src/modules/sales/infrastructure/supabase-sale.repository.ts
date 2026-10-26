@@ -51,6 +51,7 @@ interface ReceiptJson {
     shift_id: string | null;
     user_id: string;
     customer_id: string | null;
+    customer_phone?: string | null;
     subtotal: number | string;
     discount_total: number | string;
     tax_total: number | string;
@@ -100,6 +101,7 @@ export function mapReceiptJson(json: ReceiptJson): SaleReceipt {
       shiftId: s.shift_id,
       userId: s.user_id,
       customerId: s.customer_id,
+      customerPhone: s.customer_phone ?? null,
       subtotal: toMoney(s.subtotal),
       discountTotal: toMoney(s.discount_total),
       taxTotal: toMoney(s.tax_total),
@@ -213,6 +215,7 @@ export class SupabaseSaleRepository implements ISaleRepository {
         user_id: record.userId,
         shift_id: record.shiftId ?? null,
         customer_id: record.customerId ?? null,
+        customer_phone: record.customerPhone ?? null,
         allow_negative_stock: record.allowNegativeStock ?? false,
         is_credit: record.isCredit ?? false,
         promotion_id: record.promotionIds?.[0] ?? null,

@@ -430,6 +430,7 @@ export class CheckoutUseCase {
       userId: actor.userId,
       shiftId,
       customerId: parsed.data.customerId ?? null,
+      customerPhone: parsed.data.customerPhone ?? null,
       allowNegativeStock: false,
       isCredit: parsed.data.isCredit,
       promotionIds: appliedPromotionIds,

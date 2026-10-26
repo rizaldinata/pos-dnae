@@ -19,9 +19,7 @@ export interface IReceivableRepository {
     paymentMethodId?: string | null;
     note?: string;
   }): Promise<Result<{ newBalance: number }, DomainError>>;
-  getPaymentHistory(
-    customerId: string
-  ): Promise<
+  getPaymentHistory(customerId: string): Promise<
     Result<
       {
         id: string;

@@ -17,6 +17,7 @@ import {
   X,
   LogOut,
   Wallet,
+  ShoppingBag,
 } from "lucide-react";
 import { logoutAction } from "@/modules/iam/presentation/actions/auth.action";
 import { SwitchCashierButton } from "@/modules/iam/presentation/components/switch-cashier-button";
@@ -48,6 +49,13 @@ const MENU_ITEMS: MenuItem[] = [
     label: "Kasir",
     icon: Store,
     requiredPermissions: [],
+    available: true,
+  },
+  {
+    href: "/pesanan",
+    label: "Pesanan",
+    icon: ShoppingBag,
+    requiredPermissions: ["order.manage"],
     available: true,
   },
   {
@@ -145,11 +153,11 @@ export function Sidebar({ user }: { user: SidebarUser }) {
         <ul className="flex flex-col gap-1">
           <li>
             <Link
-              href="/"
+              href="/dasbor"
               onClick={() => setOpen(false)}
               className={cn(
                 "flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-medium",
-                pathname === "/"
+                pathname === "/dasbor"
                   ? "bg-sidebar-accent text-sidebar-accent-foreground"
                   : "hover:bg-sidebar-hover"
               )}

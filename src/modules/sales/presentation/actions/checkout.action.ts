@@ -32,6 +32,7 @@ export interface ReceiptDTO {
   grandTotal: number;
   paidTotal: number;
   changeAmount: number;
+  customerPhone: string | null;
   items: ReceiptItemDTO[];
   payments: ReceiptPaymentDTO[];
 }
@@ -50,6 +51,8 @@ export interface CheckoutFormInput {
     discount?: { kind: "percent" | "amount"; value: number };
   }[];
   customerId?: string | null;
+  /** No. HP (WhatsApp) pelanggan untuk notifikasi struk; opsional. */
+  customerPhone?: string | null;
   transactionDiscount?: { kind: "percent" | "amount"; value: number };
   voucherCode?: string | null;
   /** Jumlah poin yang ditukar (POS-14); nilai rupiah dihitung server. */
@@ -81,6 +84,7 @@ export async function checkoutAction(
       redeemPoints: input.redeemPoints ?? 0,
       payments: input.payments,
       customerId: input.customerId ?? null,
+      customerPhone: input.customerPhone?.trim() || null,
     }
   );
 
@@ -105,6 +109,7 @@ export async function checkoutAction(
       grandTotal: sale.grandTotal.amount,
       paidTotal: sale.paidTotal.amount,
       changeAmount: sale.changeAmount.amount,
+      customerPhone: sale.customerPhone,
       items: items.map((item) => ({
         productName: item.productName,
         sku: item.sku,
@@ -121,6 +126,31 @@ export async function checkoutAction(
       })),
     },
   };
+}
+
+export interface NotifyWhatsAppState {
+  success: boolean;
+  message: string;
+}
+
+/**
+ * Kirim notifikasi struk WhatsApp (lewat WAHA) ke no. HP pelanggan yang
+ * diinput saat checkout. Struk & nomor dibaca ulang dari database di server.
+ */
+export async function sendReceiptWhatsAppAction(
+  saleId: string
+): Promise<NotifyWhatsAppState> {
+  const guard = await requirePermission("sale.create");
+  if (!guard.ok) {
+    return { success: false, message: guard.message };
+  }
+
+  const container = await getAppContainer();
+  const result = await container.sales.sendReceiptNotification.execute(saleId);
+  if (isErr(result)) {
+    return { success: false, message: result.error.message };
+  }
+  return { success: true, message: "Notifikasi WhatsApp terkirim" };
 }
 
 export interface PaymentMethodDTO {

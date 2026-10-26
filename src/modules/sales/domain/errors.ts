@@ -24,6 +24,14 @@ export class InvalidPaymentMethodError extends DomainError {
   }
 }
 
+export class ReceiptSendError extends DomainError {
+  public readonly code = "RECEIPT_SEND_FAILED";
+
+  constructor(message: string) {
+    super(message);
+  }
+}
+
 export class SaleNotFoundError extends DomainError {
   public readonly code = "SALE_NOT_FOUND";
 

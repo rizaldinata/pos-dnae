@@ -79,9 +79,7 @@ export interface ReturnHistoryItem {
   createdAt: string;
 }
 
-export async function listReturnsAction(
-  page: number
-): Promise<{
+export async function listReturnsAction(page: number): Promise<{
   items: ReturnHistoryItem[];
   total: number;
   page: number;

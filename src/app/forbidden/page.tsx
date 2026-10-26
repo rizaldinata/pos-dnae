@@ -15,7 +15,7 @@ export default function ForbiddenPage() {
         Owner jika Anda merasa ini keliru.
       </p>
       <Button asChild>
-        <Link href="/">Kembali ke dasbor</Link>
+        <Link href="/dasbor">Kembali ke dasbor</Link>
       </Button>
     </main>
   );

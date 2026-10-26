@@ -20,6 +20,8 @@ export interface CreateSaleRecord {
   userId: string;
   shiftId?: string | null;
   customerId?: string | null;
+  /** No. HP (WhatsApp) pelanggan untuk notifikasi struk; opsional. */
+  customerPhone?: string | null;
   allowNegativeStock?: boolean;
   isCredit?: boolean;
   promotionIds?: string[];

@@ -480,6 +480,122 @@ export type Database = {
         };
         Relationships: [];
       };
+      order_items: {
+        Row: {
+          id: string;
+          line_total: number;
+          order_id: string;
+          product_name: string;
+          qty: number;
+          unit_price: number;
+          variant_id: string;
+          variant_name: string;
+        };
+        Insert: {
+          id?: string;
+          line_total: number;
+          order_id: string;
+          product_name: string;
+          qty: number;
+          unit_price: number;
+          variant_id: string;
+          variant_name?: string;
+        };
+        Update: {
+          id?: string;
+          line_total?: number;
+          order_id?: string;
+          product_name?: string;
+          qty?: number;
+          unit_price?: number;
+          variant_id?: string;
+          variant_name?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "order_items_variant_id_fkey";
+            columns: ["variant_id"];
+            isOneToOne: false;
+            referencedRelation: "product_variants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      orders: {
+        Row: {
+          address: string;
+          cancel_reason: string;
+          created_at: string;
+          customer_name: string;
+          customer_phone: string;
+          fulfillment: string;
+          id: string;
+          note: string;
+          order_no: string;
+          payment_proof_path: string;
+          payment_type: string;
+          processed_at: string | null;
+          processed_by: string | null;
+          status: string;
+          subtotal: number;
+          total: number;
+          updated_at: string;
+        };
+        Insert: {
+          address?: string;
+          cancel_reason?: string;
+          created_at?: string;
+          customer_name: string;
+          customer_phone: string;
+          fulfillment: string;
+          id?: string;
+          note?: string;
+          order_no: string;
+          payment_proof_path?: string;
+          payment_type: string;
+          processed_at?: string | null;
+          processed_by?: string | null;
+          status?: string;
+          subtotal: number;
+          total: number;
+          updated_at?: string;
+        };
+        Update: {
+          address?: string;
+          cancel_reason?: string;
+          created_at?: string;
+          customer_name?: string;
+          customer_phone?: string;
+          fulfillment?: string;
+          id?: string;
+          note?: string;
+          order_no?: string;
+          payment_proof_path?: string;
+          payment_type?: string;
+          processed_at?: string | null;
+          processed_by?: string | null;
+          status?: string;
+          subtotal?: number;
+          total?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "orders_processed_by_fkey";
+            columns: ["processed_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       payment_methods: {
         Row: {
           created_at: string;
@@ -1300,6 +1416,7 @@ export type Database = {
           change_amount: number;
           created_at: string;
           customer_id: string | null;
+          customer_phone: string | null;
           discount_total: number;
           grand_total: number;
           id: string;
@@ -1323,6 +1440,7 @@ export type Database = {
           change_amount?: number;
           created_at?: string;
           customer_id?: string | null;
+          customer_phone?: string | null;
           discount_total?: number;
           grand_total?: number;
           id?: string;
@@ -1346,6 +1464,7 @@ export type Database = {
           change_amount?: number;
           created_at?: string;
           customer_id?: string | null;
+          customer_phone?: string | null;
           discount_total?: number;
           grand_total?: number;
           id?: string;
@@ -1911,6 +2030,10 @@ export type Database = {
           total: number;
         }[];
       };
+      cancel_online_order: {
+        Args: { p_order_id: string; p_reason: string; p_actor: string | null };
+        Returns: Json;
+      };
       close_shift: {
         Args: { p_closing_cash: number; p_note?: string; p_shift_id: string };
         Returns: Json;
@@ -1976,6 +2099,7 @@ export type Database = {
       };
       next_number: { Args: { p_name: string }; Returns: number };
       open_shift: { Args: { p_opening_cash: number }; Returns: Json };
+      place_online_order: { Args: { p_payload: Json }; Returns: Json };
       profit_by_period: {
         Args: { p_from: string; p_granularity?: string; p_to: string };
         Returns: {

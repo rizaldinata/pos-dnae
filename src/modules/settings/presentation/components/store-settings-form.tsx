@@ -26,6 +26,7 @@ const SAMPLE_RECEIPT: ReceiptDTO = {
   grandTotal: 10000,
   paidTotal: 10000,
   changeAmount: 0,
+  customerPhone: null,
   items: [
     {
       productName: "Contoh Produk",

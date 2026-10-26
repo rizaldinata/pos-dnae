@@ -22,7 +22,17 @@ const ROUTE_RULES: RouteRule[] = [
   },
   { prefix: "/laporan", roles: ["Owner", "Admin", "Manajer"] },
   { prefix: "/kasir", roles: ["Owner", "Admin", "Manajer", "Kasir"] },
+  { prefix: "/pesanan", roles: ["Owner", "Admin", "Manajer", "Kasir"] },
 ];
+
+// Halaman publik (landing page toko + cek pesanan) dapat diakses tanpa login.
+const PUBLIC_PATHS = ["/", "/cek-pesanan"];
+
+function isPublicPath(pathname: string): boolean {
+  return PUBLIC_PATHS.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`)
+  );
+}
 
 function matchRule(pathname: string): RouteRule | null {
   let best: RouteRule | null = null;
@@ -47,7 +57,7 @@ export async function proxy(request: NextRequest) {
   const isLoginPage = pathname === "/login";
 
   if (!user) {
-    if (isLoginPage) {
+    if (isLoginPage || isPublicPath(pathname)) {
       return supabaseResponse;
     }
     const loginUrl = request.nextUrl.clone();
@@ -57,7 +67,7 @@ export async function proxy(request: NextRequest) {
 
   if (isLoginPage) {
     const homeUrl = request.nextUrl.clone();
-    homeUrl.pathname = "/";
+    homeUrl.pathname = "/dasbor";
     return NextResponse.redirect(homeUrl);
   }
 

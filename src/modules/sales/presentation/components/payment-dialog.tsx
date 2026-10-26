@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import {
   checkoutAction,
   listActivePaymentMethodsAction,
+  sendReceiptWhatsAppAction,
   type PaymentMethodDTO,
   type ReceiptDTO,
 } from "@/modules/sales/presentation/actions/checkout.action";
@@ -25,6 +26,8 @@ import {
   DialogTitle,
 } from "@/shared/ui/dialog";
 import { formatRupiah } from "@/shared/lib/format-rupiah";
+import { toast } from "@/shared/ui/toast";
+import { MessageCircle } from "lucide-react";
 import { ReceiptPreview } from "@/modules/sales/presentation/components/receipt-preview";
 import { ReceiptPdfDownload } from "@/modules/sales/presentation/components/receipt-pdf";
 
@@ -52,6 +55,7 @@ export function PaymentDialog({
   onClose: () => void;
 }) {
   const selectedCustomer = useCartStore((s) => s.selectedCustomer);
+  const customerPhone = useCartStore((s) => s.customerPhone);
   const items = useCartStore((s) => s.items);
   const transactionDiscount = useCartStore((s) => s.transactionDiscount);
   const voucher = useCartStore((s) => s.voucher);
@@ -71,6 +75,8 @@ export function PaymentDialog({
   const [receipt, setReceipt] = useState<ReceiptDTO | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [notifyPending, startNotifyTransition] = useTransition();
+  const [notified, setNotified] = useState(false);
   const idempotencyKey = useRef<string>(crypto.randomUUID());
 
   useEffect(() => {
@@ -177,6 +183,7 @@ export function PaymentDialog({
         idempotencyKey: idempotencyKey.current,
         isCredit,
         customerId: selectedCustomer?.id ?? null,
+        customerPhone: customerPhone.trim() || null,
         items: entities.map((item) => ({
           variantId: item.variantId,
           qty: item.qty,
@@ -208,6 +215,26 @@ export function PaymentDialog({
     onClose();
     requestAnimationFrame(() => {
       document.getElementById("pos-search-input")?.focus();
+    });
+  }
+
+  /** Kirim notifikasi struk WhatsApp ke no. HP yang diinput saat pesanan. */
+  function handleNotifyWhatsApp() {
+    if (!receipt || notifyPending || notified) {
+      return;
+    }
+    startNotifyTransition(async () => {
+      const result = await sendReceiptWhatsAppAction(receipt.saleId);
+      if (result.success) {
+        setNotified(true);
+        toast({ title: "Notifikasi terkirim", description: result.message });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Gagal mengirim notifikasi",
+          description: result.message,
+        });
+      }
     });
   }
 
@@ -473,6 +500,19 @@ export function PaymentDialog({
                     : undefined
                 }
               />
+              {receipt.customerPhone && (
+                <Button
+                  variant="outline"
+                  className="min-h-11 flex-1"
+                  onClick={handleNotifyWhatsApp}
+                  loading={notifyPending}
+                  disabled={notified}
+                  title={`Kirim struk ke ${receipt.customerPhone}`}
+                >
+                  <MessageCircle />
+                  {notified ? "Terkirim" : "Kirim WA"}
+                </Button>
+              )}
               <Button
                 onClick={handleNewTransaction}
                 className="min-h-11 flex-1"

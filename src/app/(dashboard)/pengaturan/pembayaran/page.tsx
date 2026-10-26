@@ -4,6 +4,7 @@ import { requirePermission } from "@/modules/iam/presentation/actions/require-pe
 import { isErr } from "@/shared/kernel/result";
 import { SettingsNav } from "@/modules/settings/presentation/components/settings-nav";
 import { PaymentMethodManagement } from "@/modules/settings/presentation/components/payment-method-management";
+import { QrisSettingsCard } from "@/modules/settings/presentation/components/qris-settings-card";
 
 export const dynamic = "force-dynamic";
 
@@ -18,9 +19,12 @@ export default async function PaymentMethodsPage() {
   }
 
   const container = await getAppContainer();
-  const result = await container.settings.listPaymentMethods.execute();
-  if (isErr(result)) {
-    throw new Error(result.error.message);
+  const [methods, settings] = await Promise.all([
+    container.settings.listPaymentMethods.execute(),
+    container.settings.getStoreSettings.execute(),
+  ]);
+  if (isErr(methods)) {
+    throw new Error(methods.error.message);
   }
 
   return (
@@ -31,12 +35,15 @@ export default async function PaymentMethodsPage() {
         showRoles={guard.user.hasPermission("role.manage")}
       />
       <PaymentMethodManagement
-        methods={result.data.map((m) => ({
+        methods={methods.data.map((m) => ({
           id: m.id,
           name: m.name,
           type: m.type,
           isActive: m.isActive,
         }))}
+      />
+      <QrisSettingsCard
+        initialUrl={isErr(settings) ? "" : settings.data.qrisImageUrl}
       />
     </div>
   );

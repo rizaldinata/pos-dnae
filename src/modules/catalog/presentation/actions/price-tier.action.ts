@@ -9,9 +9,7 @@ export interface PriceTierDTO {
   price: number;
 }
 
-export async function getPriceTiersAction(
-  variantId: string
-): Promise<{
+export async function getPriceTiersAction(variantId: string): Promise<{
   success: boolean;
   tiers: PriceTierDTO[];
   message: string | null;

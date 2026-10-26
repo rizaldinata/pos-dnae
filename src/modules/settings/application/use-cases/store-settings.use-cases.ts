@@ -42,7 +42,9 @@ export const StoreSettingsSchema = z.object({
 
 export type UpdateStoreSettingsInput = z.input<typeof StoreSettingsSchema>;
 
-const TO_KEY: Record<keyof StoreSettings, string> = {
+// QRIS diatur terpisah (upload gambar, key payment.qris_image_url) sehingga
+// tidak ikut dalam form ini.
+const TO_KEY: Record<Exclude<keyof StoreSettings, "qrisImageUrl">, string> = {
   storeName: "store.name",
   storeAddress: "store.address",
   storePhone: "store.phone",
@@ -82,7 +84,7 @@ export class UpdateStoreSettingsUseCase {
 
     const entries: Record<string, unknown> = {};
     for (const [field, key] of Object.entries(TO_KEY)) {
-      const value = parsed.data[field as keyof StoreSettings];
+      const value = parsed.data[field as keyof typeof parsed.data];
       if (isStoreSettingKey(key)) {
         entries[key] = value;
       }
@@ -93,5 +95,26 @@ export class UpdateStoreSettingsUseCase {
       return err(saved.error);
     }
     return ok(parsed.data as StoreSettings);
+  }
+}
+
+/**
+ * Menyimpan URL gambar QRIS toko (payment.qris_image_url). File diunggah
+ * ke bucket store-assets oleh action; use case ini hanya memvalidasi +
+ * menyimpan URL publiknya.
+ */
+export class UpdateQrisImageUseCase {
+  constructor(private readonly settings: ISettingsRepository) {}
+
+  public async execute(url: string): Promise<Result<void, DomainError>> {
+    const trimmed = url.trim();
+    if (!/^https?:\/\/\S{5,500}$/.test(trimmed)) {
+      return err(new ValidationError("URL gambar QRIS tidak valid"));
+    }
+    const saved = await this.settings.set("payment.qris_image_url", trimmed);
+    if (isErr(saved)) {
+      return err(saved.error);
+    }
+    return ok(undefined);
   }
 }

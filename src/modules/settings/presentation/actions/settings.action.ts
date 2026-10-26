@@ -128,6 +128,78 @@ export async function uploadStoreLogoAction(
   };
 }
 
+/**
+ * Unggah gambar QRIS toko ke bucket store-assets (publik) dan simpan
+ * URL-nya ke setting payment.qris_image_url — dipakai halaman publik
+ * untuk menampilkan kode QR saat pelanggan memilih bayar QRIS.
+ */
+export async function uploadQrisImageAction(
+  formData: FormData
+): Promise<{ success: boolean; url: string | null; message: string | null }> {
+  const guard = await requirePermission("settings.manage");
+  if (!guard.ok || guard.user.roleName !== "Owner") {
+    return {
+      success: false,
+      url: null,
+      message: "Hanya Owner yang dapat mengunggah gambar QRIS",
+    };
+  }
+
+  const file = formData.get("qris");
+  if (!(file instanceof File) || file.size === 0) {
+    return {
+      success: false,
+      url: null,
+      message: "Pilih file gambar terlebih dahulu",
+    };
+  }
+  if (!file.type.startsWith("image/")) {
+    return { success: false, url: null, message: "File harus berupa gambar" };
+  }
+  if (file.size > 2 * 1024 * 1024) {
+    return { success: false, url: null, message: "Ukuran maksimal 2MB" };
+  }
+
+  const { createSupabaseServerClient } =
+    await import("@/shared/infrastructure/supabase/server-client");
+  const supabase = await createSupabaseServerClient();
+
+  const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+  const path = `qris.${ext}`;
+  const { error } = await supabase.storage
+    .from("store-assets")
+    .upload(path, file, {
+      upsert: true,
+      contentType: file.type,
+    });
+  if (error) {
+    return {
+      success: false,
+      url: null,
+      message: `Gagal mengunggah: ${error.message}`,
+    };
+  }
+  const { data } = supabase.storage.from("store-assets").getPublicUrl(path);
+  const url = `${data.publicUrl}?t=${Date.now()}`;
+
+  const container = await getAppContainer();
+  const saved = await container.settings.updateQrisImage.execute(url);
+  if (isErr(saved)) {
+    return {
+      success: false,
+      url: null,
+      message: `Gagal menyimpan pengaturan: ${saved.error.message}`,
+    };
+  }
+
+  revalidatePath("/pengaturan/pembayaran");
+  return {
+    success: true,
+    url,
+    message: "Gambar QRIS berhasil diunggah dan disimpan",
+  };
+}
+
 export interface PricingSettingsState {
   success: boolean;
   message: string | null;

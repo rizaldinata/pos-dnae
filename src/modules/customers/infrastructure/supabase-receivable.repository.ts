@@ -112,9 +112,7 @@ export class SupabaseReceivableRepository implements IReceivableRepository {
     return ok({ newBalance: Math.round(Number(json.new_balance)) });
   }
 
-  public async getPaymentHistory(
-    customerId: string
-  ): Promise<
+  public async getPaymentHistory(customerId: string): Promise<
     Result<
       {
         id: string;

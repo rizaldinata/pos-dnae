@@ -20,6 +20,25 @@ import {
   ResumeSaleUseCase,
 } from "@/modules/sales/application/use-cases/hold.use-cases";
 import { SearchProductsForPOSUseCase } from "@/modules/sales/application/use-cases/search-products-pos.use-case";
+import { SendReceiptNotificationUseCase } from "@/modules/sales/application/use-cases/send-receipt-notification.use-case";
+import { WahaReceiptSender } from "@/modules/sales/infrastructure/waha-receipt-sender";
+
+// Orders module dependencies (pesanan online dari landing page publik)
+import { SupabaseOrderRepository } from "@/modules/orders/infrastructure/supabase-order.repository";
+import { SupabaseStorefrontCatalogRepository } from "@/modules/orders/infrastructure/supabase-storefront.repository";
+import { PlaceOrderUseCase } from "@/modules/orders/application/use-cases/place-order.use-case";
+import {
+  GetOrderStatusUseCase,
+  GetStorefrontDataUseCase,
+  GetStorefrontSettingsUseCase,
+} from "@/modules/orders/application/use-cases/storefront.use-cases";
+import {
+  AttachPaymentProofUseCase,
+  CancelOrderUseCase,
+  GetOrderDetailUseCase,
+  ListOrdersUseCase,
+  UpdateOrderStatusUseCase,
+} from "@/modules/orders/application/use-cases/order-management.use-cases";
 
 // IAM module dependencies
 import { SupabaseUserRepository } from "@/modules/iam/infrastructure/supabase-user.repository";
@@ -130,6 +149,7 @@ import {
 } from "@/modules/settings/application/use-cases/list-active-payment-methods.use-case";
 import {
   GetStoreSettingsUseCase,
+  UpdateQrisImageUseCase,
   UpdateStoreSettingsUseCase,
 } from "@/modules/settings/application/use-cases/store-settings.use-cases";
 import {
@@ -271,6 +291,7 @@ export interface AppContainer {
   sales: {
     checkout: CheckoutUseCase;
     getSaleReceipt: GetSaleReceiptUseCase;
+    sendReceiptNotification: SendReceiptNotificationUseCase;
     searchProductsForPOS: SearchProductsForPOSUseCase;
     voidSale: VoidSaleUseCase;
     createReturn: CreateReturnUseCase;
@@ -278,6 +299,17 @@ export interface AppContainer {
     holdSale: HoldSaleUseCase;
     listHeldSales: ListHeldSalesUseCase;
     resumeSale: ResumeSaleUseCase;
+  };
+  orders: {
+    placeOrder: PlaceOrderUseCase;
+    getStorefrontData: GetStorefrontDataUseCase;
+    getStorefrontSettings: GetStorefrontSettingsUseCase;
+    getOrderStatus: GetOrderStatusUseCase;
+    listOrders: ListOrdersUseCase;
+    getOrderDetail: GetOrderDetailUseCase;
+    updateOrderStatus: UpdateOrderStatusUseCase;
+    cancelOrder: CancelOrderUseCase;
+    attachPaymentProof: AttachPaymentProofUseCase;
   };
   iam: {
     login: LoginUseCase;
@@ -341,6 +373,7 @@ export interface AppContainer {
     listPaymentMethods: ListPaymentMethodsUseCase;
     getStoreSettings: GetStoreSettingsUseCase;
     updateStoreSettings: UpdateStoreSettingsUseCase;
+    updateQrisImage: UpdateQrisImageUseCase;
     createPaymentMethod: CreatePaymentMethodUseCase;
     updatePaymentMethod: UpdatePaymentMethodUseCase;
     getPricingSettings: GetPricingSettingsUseCase;
@@ -439,6 +472,11 @@ export function createContainer(
   const userRepository = new SupabaseUserRepository(supabase, adminSupabase);
   const roleRepository = new SupabaseRoleRepository(supabase);
   const authService = new SupabaseAuthService(supabase, adminSupabase);
+  // Pesanan online: dibaca/ditulis via service role (publik tanpa login).
+  const orderRepository = new SupabaseOrderRepository(adminSupabase);
+  const storefrontCatalogRepository = new SupabaseStorefrontCatalogRepository(
+    adminSupabase
+  );
 
   // 2. Use Cases
   const productRepository = new SupabaseProductRepository(supabase);
@@ -489,6 +527,16 @@ export function createContainer(
         voucherRepository
       ),
       getSaleReceipt: new GetSaleReceiptUseCase(saleRepository),
+      sendReceiptNotification: new SendReceiptNotificationUseCase(
+        saleRepository,
+        settingsRepository,
+        // Pengiriman struk via WhatsApp HTTP API (WAHA); konfigurasi di env.
+        new WahaReceiptSender({
+          baseUrl: process.env.WAHA_URL,
+          apiKey: process.env.WAHA_API_KEY,
+          session: process.env.WAHA_SESSION,
+        })
+      ),
       searchProductsForPOS: new SearchProductsForPOSUseCase(
         productRepository,
         priceTierRepository
@@ -499,6 +547,21 @@ export function createContainer(
       holdSale: new HoldSaleUseCase(saleRepository),
       listHeldSales: new ListHeldSalesUseCase(saleRepository),
       resumeSale: new ResumeSaleUseCase(saleRepository),
+    },
+    orders: {
+      placeOrder: new PlaceOrderUseCase(orderRepository),
+      getStorefrontData: new GetStorefrontDataUseCase(
+        storefrontCatalogRepository
+      ),
+      getStorefrontSettings: new GetStorefrontSettingsUseCase(
+        storefrontCatalogRepository
+      ),
+      getOrderStatus: new GetOrderStatusUseCase(orderRepository),
+      listOrders: new ListOrdersUseCase(orderRepository),
+      getOrderDetail: new GetOrderDetailUseCase(orderRepository),
+      updateOrderStatus: new UpdateOrderStatusUseCase(orderRepository),
+      cancelOrder: new CancelOrderUseCase(orderRepository),
+      attachPaymentProof: new AttachPaymentProofUseCase(orderRepository),
     },
     iam: {
       login: new LoginUseCase(userRepository, authService),
@@ -594,6 +657,7 @@ export function createContainer(
       ),
       getStoreSettings: new GetStoreSettingsUseCase(settingsRepository),
       updateStoreSettings: new UpdateStoreSettingsUseCase(settingsRepository),
+      updateQrisImage: new UpdateQrisImageUseCase(settingsRepository),
       createPaymentMethod: new CreatePaymentMethodUseCase(
         paymentMethodRepository
       ),

@@ -11,6 +11,8 @@ export interface SaleProps {
   shiftId: string | null;
   userId: string;
   customerId: string | null;
+  /** No. HP (WhatsApp) pelanggan untuk notifikasi struk; opsional. */
+  customerPhone?: string | null;
   subtotal: Money;
   discountTotal: Money;
   taxTotal: Money;
@@ -46,6 +48,10 @@ export class Sale extends BaseEntity<SaleProps> {
 
   public get idempotencyKey(): string {
     return this._props.idempotencyKey;
+  }
+
+  public get customerPhone(): string | null {
+    return this._props.customerPhone ?? null;
   }
 
   public get grandTotal(): Money {

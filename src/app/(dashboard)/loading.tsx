@@ -7,7 +7,7 @@ export default function DashboardLoading() {
   return (
     <div
       role="status"
-      className="flex min-h-[60vh] flex-col items-center justify-center gap-3 text-muted-foreground"
+      className="flex min-h-[calc(100dvh-2rem)] flex-col items-center justify-center gap-3 text-muted-foreground lg:min-h-[calc(100dvh-3rem)]"
     >
       <Loader2 className="size-6 animate-spin" aria-hidden="true" />
       <p className="text-sm">Memuat halaman...</p>

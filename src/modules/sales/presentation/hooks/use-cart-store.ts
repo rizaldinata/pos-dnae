@@ -86,6 +86,8 @@ interface CartState {
   items: CartItemData[];
   transactionDiscount: DiscountData | null;
   selectedCustomer: SelectedCustomer | null;
+  /** No. HP (WhatsApp) pelanggan untuk notifikasi struk — diinput opsional. */
+  customerPhone: string;
   promotions: CartPromotion[];
   voucher: CartVoucher | null;
   redeem: CartRedeem | null;
@@ -100,6 +102,7 @@ interface CartState {
   clearRedeem: () => void;
   selectCustomer: (customer: SelectedCustomer) => void;
   clearCustomer: () => void;
+  setCustomerPhone: (phone: string) => void;
   addItem: (variant: POSVariant) => string | null;
   setQty: (variantId: string, qty: number) => string | null;
   removeItem: (variantId: string) => void;
@@ -174,6 +177,7 @@ export const useCartStore = create<CartState>()(
       items: [],
       transactionDiscount: null,
       selectedCustomer: null,
+      customerPhone: "",
       promotions: [],
       voucher: null,
       redeem: null,
@@ -193,6 +197,8 @@ export const useCartStore = create<CartState>()(
         })),
 
       clearCustomer: () => set({ selectedCustomer: null, redeem: null }),
+
+      setCustomerPhone: (phone) => set({ customerPhone: phone }),
 
       addItem: (variant) => {
         const existing = get().items.find(
@@ -318,6 +324,7 @@ export const useCartStore = create<CartState>()(
           items: [],
           transactionDiscount: null,
           selectedCustomer: null,
+          customerPhone: "",
           voucher: null,
           redeem: null,
         }),
@@ -329,6 +336,7 @@ export const useCartStore = create<CartState>()(
         items: state.items,
         transactionDiscount: state.transactionDiscount,
         selectedCustomer: state.selectedCustomer,
+        customerPhone: state.customerPhone,
         voucher: state.voucher,
         redeem: state.redeem,
         pricing: state.pricing,

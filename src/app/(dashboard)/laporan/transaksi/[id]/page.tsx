@@ -63,6 +63,7 @@ export default async function TransactionDetailPage({
     grandTotal: sale.grandTotal.amount,
     paidTotal: sale.paidTotal.amount,
     changeAmount: sale.changeAmount.amount,
+    customerPhone: sale.customerPhone,
     items: items.map((item) => ({
       productName: item.productName,
       sku: item.sku,
